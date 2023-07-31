@@ -136,6 +136,9 @@ def main():
             print("Calculating force S-curve...")
             output.scurve(mol2.forces.flatten(), mol1.forces.flatten(),
                 output_dir, "mm_f_scurve")
+            np.savetxt(f"./{output_dir}/mm_f_test.dat", np.column_stack((
+                mol2.forces.flatten(), mol1.forces.flatten())),
+                       delimiter=", ", fmt="%.6f")
 
         elif option_flag == 2:
             print("Calculating force error distribution...")
