@@ -25,7 +25,7 @@ def main():
             [2] - Analyse MD output.
             [3] - Convert MD output into QM input.
             [4] - Analyse QM output.
-            [5] - Convert QM output into ML input.
+            [5] - Convert QM output into ML or MD input.
             [6] - Train or Test an ANN.
             [7] - Query external dataset.
             > """))
@@ -258,22 +258,29 @@ def main():
             print(f"Distance matrix RMSD: {np.mean(rmsd_dist)} Angstrom")
 
     elif input_flag == 5:
-        print("Convert QM output into ML input.")
+        print("Convert QM output into ML / MD input.")
         input_dir = "qm_input"
-        output_dir = "qm_data"
-        isExist = os.path.exists(output_dir)
-        if not isExist:
-            os.makedirs(output_dir)
-        while True:
-            try:
-                set_size = int(input("Enter the dataset size > "))
-                break
-            except ValueError:
-                print("Invalid Value")
-        qm2ml.gau2ml(set_size, input_dir, output_dir)
+
+        option_flag = int(input("""
+                     [1] - Convert to ML input.
+                     [2] - Convert to MD input (.gro format).
+                     > """))
+        if option_flag == 1:
+            output_dir = "qm_data"
+            isExist = os.path.exists(output_dir)
+            if not isExist:
+                os.makedirs(output_dir)
+            while True:
+                try:
+                    set_size = int(input("Enter the dataset size > "))
+                    break
+                except ValueError:
+                    print("Invalid Value")
+            qm2ml.gau2ml(set_size, input_dir, output_dir)
+        elif option_flag == 2:
+            exit()
 
     elif input_flag == 6:
-
         startTime = datetime.now()
         option_flag = int(input("""
             [1] - Train a network.
