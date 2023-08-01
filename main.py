@@ -43,6 +43,7 @@ def main():
         option_flag = int(input("""Run MD simulation.
             [1] - Use an empirical potential.
             [2] - Use a neural network potential.
+            [3] - Use ANI
             > """))
 
         input_dir1 = "md_input"
@@ -176,6 +177,12 @@ def main():
                 break
             except ValueError:
                 print("Invalid Value")
+        while True:
+            try:
+                init = int(input("Enter the initial frame > "))
+                break
+            except ValueError:
+                print("Invalid Value")
         output_dir = "qm_input"
         isExist = os.path.exists(output_dir)
         if isExist:
@@ -189,7 +196,7 @@ def main():
 
         mol = read_inputs.Molecule()
         read_inputs.dataset(mol, input_dir, set_size, "md")
-        output.write_gau(mol, set_size, output_dir)
+        output.write_gau(mol, init, set_size, output_dir)
 
     elif input_flag == 4:
         print("Analyse QM output.")
@@ -292,6 +299,7 @@ def main():
             for item in range(set_size):
                 file_name = str(item+1)
                 coord = mol.coords[item][:][:]
+                print(coord)
                 output.gro(mol.n_atom, vectors, time, coord, mol.atom_names,
                     output_dir, file_name)
 

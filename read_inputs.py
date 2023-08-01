@@ -188,6 +188,10 @@ def md(input_file):
     except ValueError:
         print("***ERROR: Invalid printing frequency")
         exit()
+    if(params["minim"]) == "False":
+        params["minim"] = False
+    elif(params["minim"]) == "True":
+        params["minim"] = True
     if(params["bias"]) == "False":
         params["bias"] = False
     elif(params["bias"]) == "True":

@@ -116,14 +116,14 @@ def heatmap2D(x, y, z, z_max, z_min, output_dir, file, title, cmap):
     return None
 
 
-def write_gau(mol, set_size, output_dir):
+def write_gau(mol, init, set_size, output_dir):
 
     # read input text section
     gaussian_params = open(f"./gaussian.txt", "r")
     text = gaussian_params.read().strip('\n')
 
     # create QM input files
-    for item in range(set_size):
+    for item in range(init, set_size):
         qm_file = open(f"./{output_dir}/mol_{item+1}.gjf", "w")
         new_text = text.replace("index", f"{item+1}")
         print(new_text, file=qm_file)

@@ -6,6 +6,7 @@ from openmmtools import integrators
 from sys import stdout
 import numpy as np
 import output, plumed
+from openmmml import MLPotential
 
 def EP(input_dir, output_dir, md_params):
     '''setup system for MD with OpenMM
@@ -19,6 +20,7 @@ def EP(input_dir, output_dir, md_params):
     bias = md_params["bias"]
     ensemble = md_params["ensemble"]
     thermostat = md_params["thermostat"]
+    minim = md_params["minim"]
     platform = Platform.getPlatformByName('OpenCL')
     if bias:
         plumed_file = open(f"{input_dir}/plumed.dat", "r")
@@ -43,7 +45,8 @@ def EP(input_dir, output_dir, md_params):
         system.addForce(PlumedForce(plumed_script))
     simulation = Simulation(top.topology, system, integrator, platform)
     simulation.context.setPositions(gro.positions)
-    simulation.minimizeEnergy()
+    if minim:
+        simulation.minimizeEnergy()
     simulation.reporters.append(StateDataReporter(f"./{output_dir}/openmm.csv",
         reportInterval=1000, step=True, time=True, potentialEnergy=True,
         kineticEnergy=True, temperature=True, separator=" "))
@@ -85,12 +88,11 @@ def MLP(model, input_dir, output_dir, md_params, atoms):
     n_steps = md_params["n_steps"]
     print_steps = md_params["print_steps"]
     bias = md_params["bias"]
+    minim = md_params["minim"]
     platform = Platform.getPlatformByName('OpenCL')
     if bias:
         plumed_file = open(f"{input_dir}/plumed.dat", "r")
         plumed_script = plumed_file.read()
-
-    # ANI is available with openmm-ml also...
 
     # read gromacs input files
     gro = GromacsGroFile(f"{input_dir}/input.gro")
@@ -125,6 +127,8 @@ def MLP(model, input_dir, output_dir, md_params, atoms):
         system.addForce(PlumedForce(plumed_script))
     simulation = Simulation(top.topology, system, integrator, platform)
     simulation.context.setPositions(gro.positions)
+    if minim:
+        simulation.minimizeEnergy()
     simulation.reporters.append(StateDataReporter(f"./{output_dir}/openmm.csv",
         reportInterval=1000, step=True, time=True, potentialEnergy=True,
         kineticEnergy=True, temperature=True, separator=" "))
