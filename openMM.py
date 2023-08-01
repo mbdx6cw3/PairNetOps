@@ -63,8 +63,8 @@ def EP(input_dir, output_dir, md_params):
                 getForces(asNumpy=True)
             state = simulation.context.getState(getEnergy=True)
             PE = state.getPotentialEnergy() / kilojoule_per_mole
-            output.gro_trj(n_atoms, vectors, time/picoseconds, coords/nanometer,
-                       gro.atomNames, output_dir)
+            output.gro(n_atoms, vectors, time/picoseconds, coords/nanometer,
+                       gro.atomNames, output_dir, "output")
             np.savetxt(f1, coords[:n_atoms])
             np.savetxt(f2, forces[:n_atoms])
             np.savetxt(f3, velocities[:n_atoms])
@@ -149,8 +149,8 @@ def MLP(model, input_dir, output_dir, md_params, atoms):
             velocities = simulation.context.getState(getVelocities=True). \
                 getVelocities(asNumpy=True)
             PE = prediction[2][0][0]
-            output.gro_trj(n_atoms, vectors, time / picoseconds,
-                           coords / nanometer, gro.atomNames, output_dir)
+            output.gro(n_atoms, vectors, time / picoseconds,
+                coords / nanometer, gro.atomNames, output_dir, "output")
             np.savetxt(f1, coords[:n_atoms])
             np.savetxt(f2, forces[:n_atoms])
             np.savetxt(f3, velocities[:n_atoms])

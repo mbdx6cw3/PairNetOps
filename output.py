@@ -33,7 +33,7 @@ def scatterplot(x, y, type, x_label, y_label, title, output_dir):
     plt.savefig(f"./{output_dir}/{title}.png")
     return None
 
-def gro_trj(n_atoms, vectors, time, coords, atom_names, output_dir):
+def gro(n_atoms, vectors, time, coords, atom_names, output_dir, file_name):
     '''
     For a given set of structure 3D coords and the atom
     associated numbers, output xyz format file called filename.
@@ -45,8 +45,8 @@ def gro_trj(n_atoms, vectors, time, coords, atom_names, output_dir):
         open_type = "w"
     else:
         open_type = "a"
-    gro_file = open(f"{output_dir}/output.gro", open_type)
-    gro_file.write(f"openmm-output, t={time} ps\n")
+    gro_file = open(f"{output_dir}/{file_name}.gro", open_type)
+    gro_file.write(f"output t={time} ps\n")
     gro_file.write(f"{n_atoms}\n")
     for atom in range(n_atoms):
         x = coords[atom][0]
@@ -57,6 +57,7 @@ def gro_trj(n_atoms, vectors, time, coords, atom_names, output_dir):
     gro_file.write("{:10.5f} {:10.5f} {:10.5f}\n".
                    format(vectors[0],vectors[1],vectors[2]))
     gro_file.close()
+
 
 def write_pdb(coords, resname, resid, atoms, filename, open_type):
     '''

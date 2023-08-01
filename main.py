@@ -258,27 +258,67 @@ def main():
             print(f"Distance matrix RMSD: {np.mean(rmsd_dist)} Angstrom")
 
     elif input_flag == 5:
-        print("Convert QM output into ML / MD input.")
-        input_dir = "qm_input"
 
+        print("Convert QM output into ML or MD input.")
         option_flag = int(input("""
                      [1] - Convert to ML input.
                      [2] - Convert to MD input (.gro format).
                      > """))
+        while True:
+            try:
+                set_size = int(input("Enter the dataset size > "))
+                break
+            except ValueError:
+                print("Invalid Value")
+
         if option_flag == 1:
+            input_dir = "qm_input"
+            isExist = os.path.exists(input_dir)
+            if not isExist:
+                print("Error - no input files detected")
+                exit()
             output_dir = "qm_data"
             isExist = os.path.exists(output_dir)
             if not isExist:
                 os.makedirs(output_dir)
-            while True:
-                try:
-                    set_size = int(input("Enter the dataset size > "))
-                    break
-                except ValueError:
-                    print("Invalid Value")
             qm2ml.gau2ml(set_size, input_dir, output_dir)
+
         elif option_flag == 2:
-            exit()
+            input_dir = "qm_data"
+            isExist = os.path.exists(input_dir)
+            if not isExist:
+                print("Error - no input files detected")
+                exit()
+            file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
+                f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt"]
+
+            # initiate molecule class and parse dataset
+            mol = read_inputs.Molecule()
+            read_inputs.dataset(file_list, mol, set_size, "qm")
+
+            output_dir = "md_input"
+            isExist = os.path.exists(output_dir)
+            if not isExist:
+                os.makedirs(output_dir)
+
+            vectors = [2.5, 2.5, 2.5]
+            time = 0.0
+
+            # define nuclear charges # TODO: add more elements
+            element = {"1": "H", "6": "C", "7": "N", "8": "O"}
+            nuclear_charge = []
+            atom_name = []
+            with open(f"./nuclear_charges.txt", "r") as nuclear_charge_file:
+                for line in nuclear_charge_file:
+                    nuclear_charge.append(line.strip('\n'))
+                    atom_name.append(element[nuclear_charge[-1]])
+            n_atom = len(nuclear_charge)
+            mol.coords = mol.coords / 10 # convert to nm
+            for item in range(set_size):
+                file_name = str(item+1)
+                coord = mol.coords[item][:][:]
+                output.gro(n_atom, vectors, time, coord, atom_name,
+                    output_dir, file_name)
 
     elif input_flag == 6:
         startTime = datetime.now()
@@ -354,15 +394,6 @@ def main():
             print("Loading a trained model...")
             prescale = np.loadtxt(f"./{input_dir1}/prescale.txt",
                                   dtype=np.float64).reshape(-1)
-            ########
-            #prescale[0] = prescale[0]/627.509608 # convert to hartree
-            #prescale[1] = prescale[1]/627.509608 # convert to hartree
-            #prescale[2] = prescale[2]*0.529177/627.509608 # convert to hartree/bohr
-            #prescale[3] = prescale[3]*0.529177/627.509608 # convert to hartree/bohr
-            #prescale[4] = prescale[4]*4.184
-            #prescale[5] = prescale[5]*4.184
-            #np.savetxt("prescale_new.txt", prescale, delimiter=" ", fmt="%.10f")
-            ########
 
             mol.energies = ((prescale[3] - prescale[2]) * (mol.orig_energies
                 - prescale[0]) / (prescale[1] - prescale[0]) + prescale[2])
@@ -391,13 +422,6 @@ def main():
 
             # get q-values from molecular energies and Cartesian atomic forces
             analyseQM.get_pairs(mol, set_size, output_dir1)
-            #print(mol.output_matFE)
-            # overwrite q-values from get pairs and get from input instead
-            #q_values = np.loadtxt("./q.dat") #convert to kcal/mol/A
-            #mol.output_matFE = np.swapaxes(q_values, 0, 1) / 4.184
-            #print(mol.output_matFE)
-            #exit()
-            #print all q's to file somewhere
 
             # build model if not training from scratch
             if not ann_load:
