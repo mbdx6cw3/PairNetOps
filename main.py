@@ -115,22 +115,14 @@ def main():
                     break
                 except ValueError:
                     print("Invalid Value")
-            file_list1 = ["./nuclear_charges.txt",
-                      f"./{input_dir1}/coords.txt",
-                      f"./{input_dir1}/forces.txt",
-                      f"./{input_dir1}/energies.txt"]
             mol1 = read_inputs.Molecule()
-            read_inputs.dataset(file_list1, mol1, set_size, "md")
+            read_inputs.dataset(mol1, input_dir1, set_size, "md")
 
         # initiate molecule class for QM dataset
         if option_flag == 1 or option_flag == 2 or option_flag == 3:
             input_dir2 = "qm_data"
-            file_list2 = ["./nuclear_charges.txt",
-                          f"./{input_dir2}/coords.txt",
-                          f"./{input_dir2}/forces.txt",
-                          f"./{input_dir2}/energies.txt"]
             mol2 = read_inputs.Molecule()
-            read_inputs.dataset(file_list2, mol2, set_size, "qm")
+            read_inputs.dataset(mol2, input_dir2, set_size, "qm")
 
         if option_flag == 1:
             print("Calculating force S-curve...")
@@ -194,10 +186,9 @@ def main():
         if not isExist:
             print("Error - no input files detected")
             exit()
-        file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
-            f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt"]
+
         mol = read_inputs.Molecule()
-        read_inputs.dataset(file_list, mol, set_size, "md")
+        read_inputs.dataset(mol, input_dir, set_size, "md")
         output.write_gau(mol, set_size, output_dir)
 
     elif input_flag == 4:
@@ -218,12 +209,10 @@ def main():
         if not isExist:
             print("Error - no input files detected")
             exit()
-        file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
-            f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt"]
 
         # initiate molecule class and parse dataset
         mol = read_inputs.Molecule()
-        read_inputs.dataset(file_list, mol, set_size, "qm")
+        read_inputs.dataset(mol, input_dir, set_size, "qm")
 
         option_flag = int(input("""
               [1] - Calculate force and energy probability distributions.
@@ -287,12 +276,10 @@ def main():
             if not isExist:
                 print("Error - no input files detected")
                 exit()
-            file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
-                f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt"]
 
             # initiate molecule class and parse dataset
             mol = read_inputs.Molecule()
-            read_inputs.dataset(file_list, mol, set_size, "qm")
+            read_inputs.dataset(mol, input_dir, set_size, "qm")
 
             output_dir = "md_input"
             isExist = os.path.exists(output_dir)
@@ -337,8 +324,6 @@ def main():
         isExist = os.path.exists(input_dir2)
         if not isExist:
             os.makedirs(input_dir2)
-        file_list = ["./nuclear_charges.txt", f"./{input_dir2}/coords.txt",
-                f"./{input_dir2}/forces.txt", f"./{input_dir2}/energies.txt"]
 
         # initiate molecule and network classes
         mol = read_inputs.Molecule()
@@ -349,7 +334,7 @@ def main():
         # define training and test sets.
         n_train, n_val, n_test = n_data[0], n_data[1], n_data[2]
         set_size = n_train + n_val + n_test
-        read_inputs.dataset(file_list, mol, set_size, "qm")
+        read_inputs.dataset(mol, input_dir2, set_size, "qm")
         mol.orig_energies = np.copy(mol.energies)
 
         # set job flags

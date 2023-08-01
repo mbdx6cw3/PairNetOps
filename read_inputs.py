@@ -26,7 +26,9 @@ class Molecule(object):
                 self.energies = np.vstack(other.energies)
 
 class dataset():
-    def __init__(self, file_list, mol, set_size, input):
+    def __init__(self, mol, input_dir, set_size, input):
+        file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
+            f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt"]
         element = {1: "H", 6: "C", 7: "N", 8: "O"}
         self.atoms = []
         self.coords = []
