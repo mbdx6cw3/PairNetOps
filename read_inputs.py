@@ -13,6 +13,8 @@ class Molecule(object):
         # read in, populate the Molecule object which is used to calculate
         # NRFs, decompFE, etc.
         self.atoms = other.atoms
+        self.n_atom = other.n_atom
+        self.atom_names = other.atom_names
         if len(other.coords) > 0:
             self.coords = np.reshape(np.vstack(other.coords),
                                      (-1, len(self.atoms), 3))
@@ -25,14 +27,17 @@ class Molecule(object):
 
 class dataset():
     def __init__(self, file_list, mol, set_size, input):
+        element = {1: "H", 6: "C", 7: "N", 8: "O"}
         self.atoms = []
         self.coords = []
+        self.atom_names = []
         input_ = open(file_list[0], 'r')
         for atom in input_:
             self.atoms.append(int(atom))
-        n_atoms = len(self.atoms)
+            self.atom_names.append(element[self.atoms[-1]])
+        self.n_atom = len(self.atoms)
         self.coords = np.reshape(np.loadtxt(file_list[1], max_rows=set_size
-            * n_atoms), (set_size, n_atoms, 3))
+            * self.n_atom), (set_size, self.n_atom, 3))
         if input == "md":
             self.coords = self.coords * 10 # nm -> Angstrom
         if len(file_list) > 2:
@@ -40,19 +45,12 @@ class dataset():
             self.forces = []
             self.energies = np.loadtxt(file_list[3], max_rows=set_size)
             self.forces = np.reshape(np.loadtxt(file_list[2], max_rows=set_size
-                * n_atoms), (set_size, n_atoms, 3))
+                * self.n_atom), (set_size, self.n_atom, 3))
             if input == "md":
                 self.energies = self.energies / 4.184 # kJ/mol -> kcal/mol
                 self.forces = self.forces / 4.184 / 10.0 # kJ/mol/nm -> kcal/mol/A
         mol.get_ZCFE(self)  # populate molecule class
-        #######
-        #np.savetxt("bnz_rmd17_e.dat", mol.energies/627.509608, delimiter=" ", fmt="%.10f")
-        #new_forces = mol.forces.reshape(120000, 3)
-        #new_coords = mol.coords.reshape(120000, 3)
-        #np.savetxt("bnz_rmd17_f.dat", new_forces*0.529177/627.509608, delimiter=" ", fmt="%.10f")
-        #np.savetxt("bnz_rmd17_c.dat", new_coords, delimiter=" ", fmt="%.10f")
-        #exit()
-        #######
+
         return None
 
 

@@ -64,14 +64,12 @@ def write_pdb(coords, resname, resid, atoms, filename, open_type):
     Write 3D coords in .pdb format. Provide the resname, resid, atoms
     and filename.
     '''
-    element = {1: "H", 6: "C", 7: "N", 8: "O"}
     outfile = open(filename, open_type)
     for i in range(len(atoms)):
-        atom_name = '{}{}'.format(element[atoms[i]], i+1)
         outfile.write('\n'.join(['{:6s}{:5d} {:^4s}{:1s}{:3s}' \
                 ' {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}' \
                 '{:6.0f}{:6.0f}          {:>2s}{:2s}'.format(
-                    'ATOM', i+1, atom_name, ' ', resname[0:3],
+                    'ATOM', i+1, mol.atom_names[i], ' ', resname[0:3],
                     'A', int(str(resid)[0:4]), ' ',
                     coords[i][0], coords[i][1], coords[i][2],
                     1, 1, ' ', ' ')]) + '\n')
@@ -124,21 +122,13 @@ def write_gau(mol, set_size, output_dir):
     gaussian_params = open(f"./gaussian.txt", "r")
     text = gaussian_params.read().strip('\n')
 
-    # define nuclear charges # TODO: add more elements
-    element = {"1" : "H", "6" : "C", "7" : "N", "8" : "O"}
-    nuclear_charge = []
-    with open(f"./nuclear_charges.txt", "r") as nuclear_charge_file:
-        for line in nuclear_charge_file:
-            nuclear_charge.append(line.strip('\n'))
-    n_atom = len(nuclear_charge)
-
     # create QM input files
     for item in range(set_size):
         qm_file = open(f"./{output_dir}/mol_{item+1}.gjf", "w")
         new_text = text.replace("index", f"{item+1}")
         print(new_text, file=qm_file)
-        for atom in range(n_atom):
-            print(f"{element[nuclear_charge[atom]]} "
+        for atom in range(mol.n_atom):
+            print(f"{mol.atom_names[atom]} "
                   f"{mol.coords[item,atom,0]:.8f} " 
                   f"{mol.coords[item,atom,1]:.8f} "
                   f"{mol.coords[item,atom,2]:.8f}",

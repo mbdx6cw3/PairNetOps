@@ -194,10 +194,8 @@ def main():
         if not isExist:
             print("Error - no input files detected")
             exit()
-        file_list = ["./nuclear_charges.txt",
-                      f"./{input_dir}/coords.txt",
-                      f"./{input_dir}/forces.txt",
-                      f"./{input_dir}/energies.txt"]
+        file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
+            f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt"]
         mol = read_inputs.Molecule()
         read_inputs.dataset(file_list, mol, set_size, "md")
         output.write_gau(mol, set_size, output_dir)
@@ -303,21 +301,11 @@ def main():
 
             vectors = [2.5, 2.5, 2.5]
             time = 0.0
-
-            # define nuclear charges # TODO: add more elements
-            element = {"1": "H", "6": "C", "7": "N", "8": "O"}
-            nuclear_charge = []
-            atom_name = []
-            with open(f"./nuclear_charges.txt", "r") as nuclear_charge_file:
-                for line in nuclear_charge_file:
-                    nuclear_charge.append(line.strip('\n'))
-                    atom_name.append(element[nuclear_charge[-1]])
-            n_atom = len(nuclear_charge)
             mol.coords = mol.coords / 10 # convert to nm
             for item in range(set_size):
                 file_name = str(item+1)
                 coord = mol.coords[item][:][:]
-                output.gro(n_atom, vectors, time, coord, atom_name,
+                output.gro(mol.n_atom, vectors, time, coord, mol.atom_names,
                     output_dir, file_name)
 
     elif input_flag == 6:
