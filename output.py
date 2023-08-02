@@ -124,8 +124,8 @@ def write_gau(mol, init, set_size, output_dir):
 
     # create QM input files
     for item in range(init, set_size):
-        qm_file = open(f"./{output_dir}/mol_{item+1}.gjf", "w")
-        new_text = text.replace("index", f"{item+1}")
+        qm_file = open(f"./{output_dir}/mol_{item+1-init}.gjf", "w")
+        new_text = text.replace("index", f"{item+1-init}")
         print(new_text, file=qm_file)
         for atom in range(mol.n_atom):
             print(f"{mol.atom_names[atom]} "
