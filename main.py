@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 __author__ = ['Christopher D Williams']
 __credits__ = ['CDW', 'Jas Kalayan', 'Ismaeel Ramzan',
-        'Neil Burton',  'Richard Bryce']
+               'Neil Burton', 'Richard Bryce']
 __license__ = 'GPL'
 __maintainer__ = 'Christopher D Williams'
 __email__ = 'christopher.williams@manchester.ac.uk'
@@ -39,53 +39,25 @@ def main():
 
     # determine type of calculation to do
     if input_flag == 1:
+
         startTime = datetime.now()
         option_flag = int(input("""Run MD simulation.
             [1] - Use an empirical potential.
-            [2] - Use a neural network potential.
+            [2] - Use a PairFENet potential.
             > """))
 
-        input_dir1 = "md_input"
-        isExist = os.path.exists(input_dir1)
-        if not isExist:
-            print("Error - no input files detected")
-            exit()
-
-        # read in MD input parameters
-        md_params = read_inputs.md(f"{input_dir1}/md_params.txt")
-        output_dir = "md_output"
-        isExist = os.path.exists(output_dir)
-        if isExist:
-            shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
-        shutil.copy2(f"./{input_dir1}/md_params.txt", f"./{output_dir}/")
-
-        # run MD with empirical potential
         if option_flag == 1:
             print("Use an empirical potential.")
-            openMM.EP(input_dir1, output_dir, md_params)
-
-        # run MD with a machine-learned potential
+            mlp = False
         elif option_flag == 2:
-            print("Use a neural network potential.")
-            input_dir2 = "trained_model"
-            isExist = os.path.exists(input_dir2)
-            if not isExist:
-                print("Error - previously trained model could not be located.")
-                exit()
-            print("Loading a trained model...")
-            prescale = np.loadtxt(f"./{input_dir2}/prescale.txt",
-                                  dtype=np.float32).reshape(-1)
-            atoms = np.loadtxt(f"./{input_dir2}/atoms.txt",
-                                  dtype=np.float32).reshape(-1)
-            ann_params = read_inputs.ann(f"./{input_dir2}/ann_params.txt")
-            shutil.copy2(f"./{input_dir2}/ann_params.txt", f"./{output_dir}")
-            mol = read_inputs.Molecule()
-            network = Network(mol)
-            model = network.build(len(atoms), ann_params, prescale)
-            model.summary()
-            model.load_weights(f"./{input_dir2}/best_ever_model")
-            openMM.MLP(model, input_dir1, output_dir, md_params, atoms)
+            print("Use a PairFENet potential.")
+            mlp = True
+
+        # setup simulation
+        simulation, output_dir, md_params, gro, force = openMM.setup(mlp)
+
+        # run simulation
+        openMM.MD(simulation, mlp, output_dir, md_params, gro, force)
 
         print(datetime.now() - startTime)
 
