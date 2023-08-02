@@ -43,7 +43,6 @@ def main():
         option_flag = int(input("""Run MD simulation.
             [1] - Use an empirical potential.
             [2] - Use a neural network potential.
-            [3] - Use ANI
             > """))
 
         input_dir1 = "md_input"

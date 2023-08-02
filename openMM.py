@@ -37,7 +37,7 @@ def EP(input_dir, output_dir, md_params):
     elif ensemble == "nvt":
         if thermostat == "nose_hoover":
             integrator = NoseHooverIntegrator(temp*kelvin,
-                1 / picosecond, ts*picoseconds)
+                1 / picoseconds, ts*picoseconds)
         elif thermostat == "langevin":
             integrator = LangevinMiddleIntegrator(temp*kelvin,
                 1 / picoseconds, ts*picoseconds)
@@ -119,7 +119,7 @@ def MLP(model, input_dir, output_dir, md_params, atoms):
     elif ensemble == "nvt":
         if thermostat == "nose_hoover":
             integrator = NoseHooverIntegrator(temp*kelvin,
-                1 / picosecond, ts*picoseconds)
+                1 / picoseconds, ts*picoseconds)
         elif thermostat == "langevin":
             integrator = LangevinMiddleIntegrator(temp*kelvin,
                 1 / picoseconds, ts*picoseconds)
