@@ -56,7 +56,7 @@ def setup(mlp):
     elif ensemble == "nvt":
         if thermostat == "nose_hoover":
             integrator = NoseHooverIntegrator(temp*kelvin,
-                1 / picoseconds, ts*picoseconds)
+                0.5 / picoseconds, ts*picoseconds)
         elif thermostat == "langevin":
             integrator = LangevinMiddleIntegrator(temp*kelvin,
                 1 / picoseconds, ts*picoseconds)
