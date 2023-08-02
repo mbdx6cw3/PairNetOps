@@ -156,7 +156,6 @@ def md(input_file):
         if len(key_word_list) > 1:
             params[key_word[0].strip()] = key_word_list
     param_file.close()
-    # TODO: temp should only be read if we are doing NVT
     try:
         params["temp"] = int(params["temp"])
     except ValueError:
@@ -184,7 +183,17 @@ def md(input_file):
         print("***ERROR: Invalid number of steps")
         exit()
     try:
-        params["print_steps"] = int(params["print_steps"])
+        params["print_trj"] = int(params["print_trj"])
+    except ValueError:
+        print("***ERROR: Invalid printing frequency")
+        exit()
+    try:
+        params["print_summary"] = int(params["print_summary"])
+    except ValueError:
+        print("***ERROR: Invalid printing frequency")
+        exit()
+    try:
+        params["print_data"] = int(params["print_data"])
     except ValueError:
         print("***ERROR: Invalid printing frequency")
         exit()
@@ -199,22 +208,3 @@ def md(input_file):
 
     return params
 
-
-''' this is for reading coordinates from .gro files
-        coord = np.empty(shape=[set_size, n_atom, 3])
-        if option_flag == 1:
-            with open(f"./{input_dir}/coord.xvg", "r") as mm_coord_file:
-                item = 0
-                for line in mm_coord_file:
-                    if item == set_size:
-                        break
-                    if line.startswith("#"):
-                        continue
-                    if line.startswith("@"):
-                        continue
-                    if not line:
-                        break
-                    coord[item] = np.reshape(line.strip('\n').split()[1:],
-                                             (n_atom, 3))
-                    item += 1
-'''

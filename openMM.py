@@ -31,7 +31,7 @@ def setup(mlp):
     ensemble = md_params["ensemble"]
     thermostat = md_params["thermostat"]
     minim = md_params["minim"]
-    platform = Platform.getPlatformByName('OpenCL')
+    platform = Platform.getPlatformByName("OpenCL")
     gro = GromacsGroFile(f"{input_dir}/input.gro")
     top = GromacsTopFile(f"{input_dir}/input.top",
         periodicBoxVectors=gro.getPeriodicBoxVectors())
@@ -47,6 +47,8 @@ def setup(mlp):
         force.addPerParticleParameter("fz")
         for j in range(n_atoms):
             force.addParticle(j, (0, 0, 0))
+    elif mlp == False:
+        force = 0
 
     # define ensemble, thermostat and integrator
     if ensemble == "nve":
@@ -78,7 +80,9 @@ def setup(mlp):
 def MD(simulation, mlp, output_dir, md_params, gro, force):
 
     n_steps = md_params["n_steps"]
-    print_steps = md_params["print_steps"]
+    print_trj = md_params["print_trj"]
+    print_data = md_params["print_data"]
+    print_summary = md_params["print_summary"]
     n_atoms = len(gro.getPositions())
     vectors = gro.getUnitCellDimensions().value_in_unit(nanometer)
 
@@ -103,7 +107,7 @@ def MD(simulation, mlp, output_dir, md_params, gro, force):
         model.load_weights(f"./{input_dir}/best_ever_model")
 
     simulation.reporters.append(StateDataReporter(f"./{output_dir}/openmm.csv",
-        reportInterval=1000, step=True, time=True, potentialEnergy=True,
+        reportInterval=print_summary,step=True, time=True, potentialEnergy=True,
         kineticEnergy=True, temperature=True, separator=" "))
 
     f1 = open(f"./{output_dir}/coords.txt", 'w')
@@ -125,7 +129,7 @@ def MD(simulation, mlp, output_dir, md_params, gro, force):
                 force.setParticleParameters(j, j, forces[j])
             force.updateParametersInContext(simulation.context)
 
-        if (i % print_steps) == 0 or i == 0:
+        if (i % print_data) == 0 or i == 0:
             time = simulation.context.getState().getTime()
             velocities = simulation.context.getState(getVelocities=True).\
                 getVelocities(asNumpy=True)
@@ -138,12 +142,15 @@ def MD(simulation, mlp, output_dir, md_params, gro, force):
             else:
                 PE = state.getPotentialEnergy() / kilojoule_per_mole
 
-            output.gro(n_atoms, vectors, time/picoseconds, coords/nanometer,
-                       gro.atomNames, output_dir, "output")
             np.savetxt(f1, coords[:n_atoms])
             np.savetxt(f2, forces[:n_atoms])
             np.savetxt(f3, velocities[:n_atoms])
             f4.write(f"{PE}\n")
+
+        if (i % print_trj) == 0 or i == 0:
+            output.gro(n_atoms, vectors, time/picoseconds, coords/nanometer,
+                       gro.atomNames, output_dir, "output")
+
         simulation.step(1)
 
     f1.close()
