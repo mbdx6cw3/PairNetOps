@@ -3,16 +3,16 @@
 activations  = silu
 
 # number of epochs
-epochs       = 100000
+epochs       = 50000
 
 # number of layers
 n_layers     = 3
 
 # number of nodes
-n_nodes      = 840, 840, 840
+n_nodes      = 360, 360, 360
 
 # size of train, validation and test sets
-n_data       = 0, 0, 1000
+n_data       = 0, 0, 72
 
 # define custom loss function weights (gradient, q, energy)
 loss_weights = 0.984, 0.0, 0.016

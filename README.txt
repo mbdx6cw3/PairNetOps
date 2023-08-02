@@ -34,6 +34,12 @@ If you are only using CPUs only one more command is needed.
 6)  Install OpenMM, OpenMM Plumed plugin and OpenMM-ML (ANI)
     >   conda install -c conda-forge openmm openmm-plumed openmm-ml openmmtools
 
+7)  Run PairNetOps.
+        Interactively:
+        > python3 main.py
+
+        From a job script (example):
+        > { echo "1"; echo "1"; } | python3 $HOME/bin/PairNetOps/main.py
 
 If you are using with GPUs some additional steps are required...
 
@@ -53,7 +59,7 @@ Hopefully not needed in TF 2.13!!
     >   python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 
 --------------------------------------------------------------------------------
-The code is located in:     /mnt/iusers01/rb01/mbdx6cw3/bin/PairNetOps
+The code is located here:     /mnt/iusers01/rb01/mbdx6cw3/bin/PairNetOps/
 
 Using PairNetOps
 --------------------------------------------------------------------------------
