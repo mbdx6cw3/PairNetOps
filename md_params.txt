@@ -6,6 +6,7 @@ ensemble = nvt
 
 # thermostat (langevin or nose_hoover)
 thermostat = nose_hoover
+coll_freq = 25.0
 
 # timestep (picoseconds)
 ts = 0.001

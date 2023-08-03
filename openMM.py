@@ -56,8 +56,9 @@ def setup(mlp):
         integrator = VerletIntegrator(ts*picoseconds)
     elif ensemble == "nvt":
         if thermostat == "nose_hoover":
-            integrator = NoseHooverIntegrator(temp*kelvin,
-                coll_freq / picosecond, ts*picoseconds)
+            integrator = integrators.NoseHooverChainVelocityVerletIntegrator\
+                (system, temp*kelvin, coll_freq / picosecond, ts*picoseconds,
+                 10, 5, 5)
         elif thermostat == "langevin":
             integrator = LangevinMiddleIntegrator(temp*kelvin,
                 coll_freq / picosecond, ts*picoseconds)
