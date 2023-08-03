@@ -172,6 +172,11 @@ def md(input_file):
         if params["thermostat"] not in accepted_strings:
             print("***ERROR: thermostat type not accepted")
             exit()
+        try:
+            params["coll_freq"] = float(params["coll_freq"])
+        except ValueError:
+            print("***ERROR: Invalid temperature")
+            exit()
     try:
         params["ts"] = float(params["ts"])
     except ValueError:

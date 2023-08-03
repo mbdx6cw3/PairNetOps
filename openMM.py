@@ -31,6 +31,7 @@ def setup(mlp):
     ensemble = md_params["ensemble"]
     thermostat = md_params["thermostat"]
     minim = md_params["minim"]
+    coll_freq = md_params["coll_freq"]
     platform = Platform.getPlatformByName("OpenCL")
     gro = GromacsGroFile(f"{input_dir}/input.gro")
     top = GromacsTopFile(f"{input_dir}/input.top",
@@ -56,10 +57,10 @@ def setup(mlp):
     elif ensemble == "nvt":
         if thermostat == "nose_hoover":
             integrator = NoseHooverIntegrator(temp*kelvin,
-                0.5 / picoseconds, ts*picoseconds)
+                coll_freq / picosecond, ts*picoseconds)
         elif thermostat == "langevin":
             integrator = LangevinMiddleIntegrator(temp*kelvin,
-                1 / picoseconds, ts*picoseconds)
+                coll_freq / picosecond, ts*picoseconds)
 
     # define biasing potentials
     if bias:

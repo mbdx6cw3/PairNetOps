@@ -19,7 +19,7 @@ def gau2ml(set_size, input_dir, output_dir):
     # set up arrays
     coord = np.empty(shape=[set_size, n_atom, 3])
     force = np.empty(shape=[set_size, n_atom, 3])
-    charge = np.empty(shape=[set_size, n_atom])
+    #charge = np.empty(shape=[set_size, n_atom])
 
     # loop over all Gaussian files, extract energies, forces and coordinates
     for i_file in range(set_size):
