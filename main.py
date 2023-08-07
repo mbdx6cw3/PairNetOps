@@ -270,7 +270,6 @@ def main():
             for item in range(set_size):
                 file_name = str(item+1)
                 coord = mol.coords[item][:][:]
-                print(coord)
                 output.gro(mol.n_atom, vectors, time, coord, mol.atom_names,
                     output_dir, file_name)
 

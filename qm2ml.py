@@ -10,7 +10,7 @@ def gau2ml(set_size, input_dir, output_dir):
     energy_file = open(f"./{output_dir}/energies.txt", "w")
     force_file = open(f"./{output_dir}/forces.txt", "w")
     error_file = open(f"./{output_dir}/errors.txt", "w")
-    charge_file = open(f"./{output_dir}/charges.txt", "w")
+    #charge_file = open(f"./{output_dir}/charges.txt", "w")
 
     # get atom count
     with open(f"./nuclear_charges.txt", "r") as nuclear_charge_file:

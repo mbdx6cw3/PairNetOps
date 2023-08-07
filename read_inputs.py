@@ -40,8 +40,8 @@ class dataset():
         self.n_atom = len(self.atoms)
         self.coords = np.reshape(np.loadtxt(file_list[1], max_rows=set_size
             * self.n_atom), (set_size, self.n_atom, 3))
-        if input == "md":
-            self.coords = self.coords * 10 # nm -> Angstrom
+        #if input == "md":
+        #    self.coords = self.coords * 10 # nm -> Angstrom
         if len(file_list) > 2:
             self.energies = []
             self.forces = []
