@@ -87,6 +87,12 @@ def main():
                     break
                 except ValueError:
                     print("Invalid Value")
+            while True:
+                try:
+                    init = int(input("Enter the initial frame > "))
+                    break
+                except ValueError:
+                    print("Invalid Value")
             mol1 = read_inputs.Molecule()
             read_inputs.dataset(mol1, input_dir1, set_size, "md")
 
@@ -133,9 +139,9 @@ def main():
             n_bins = int(input("Enter the number of bins > "))
             print("Calculating dihedral angle probability distributions...")
             if n_dih == 1:
-                analyseMD.pop1D(mol1, n_bins, CV_list, output_dir, set_size)
+                analyseMD.pop1D(mol1, n_bins, CV_list, output_dir, init, set_size)
             elif n_dih == 2:
-                analyseMD.pop2D(mol1, n_bins, CV_list, output_dir, set_size)
+                analyseMD.pop2D(mol1, n_bins, CV_list, output_dir, init, set_size)
 
         elif option_flag == 5:
             print("Calculating 2D free energy surface...")

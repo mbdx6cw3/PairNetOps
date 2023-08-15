@@ -30,20 +30,20 @@ def fes2D(input_dir, output_dir):
         "Energy (kcal/mol)", "RdBu")
     return None
 
-def pop2D(mol1, n_bins, CV_list, output_dir, set_size):
+def pop2D(mol1, n_bins, CV_list, output_dir, init, set_size):
     bin_width = 360 / n_bins
     pop = np.zeros(shape=(n_bins, n_bins))
-    for item in range(set_size):
+    for item in range(init, set_size):
         bin = np.empty(shape=[CV_list.shape[0]], dtype=int)
         for i_dih in range(CV_list.shape[0]):
             p = np.zeros([CV_list.shape[1], 3])
-            p[0:] = mol1.coords[item][CV_list[i_dih][:]]
+            p[0:] = mol1.coords[item+init][CV_list[i_dih][:]]
             bin[i_dih] = int((calc_geom.dihedral(p) + 180) / bin_width)
         if len(bin) == 1:
             pop[bin[0]] += 1
         elif len(bin) == 2:
             pop[bin[1]][bin[0]] += 1
-    pop = pop / set_size
+    pop = pop / (set_size - init)
     x, y = np.meshgrid(np.linspace(-180, 180, n_bins),
                        np.linspace(-180, 180, n_bins))
     output.heatmap2D(x, y, pop, pop.max(), pop.min(), output_dir, "pop_2d",
@@ -51,18 +51,18 @@ def pop2D(mol1, n_bins, CV_list, output_dir, set_size):
     return None
 
 
-def pop1D(mol1, n_bins, CV_list, output_dir, set_size):
-    dih = np.zeros(shape=(set_size))
-    for item in range(set_size):
+def pop1D(mol1, n_bins, CV_list, output_dir, init, set_size):
+    dih = np.zeros(shape=(set_size-init))
+    for item in range(init, set_size):
         p = np.zeros([CV_list.shape[1], 3])
         p[0:] = mol1.coords[item][CV_list[0][:]]
-        dih[item] = calc_geom.dihedral(p)
+        dih[item-init] = calc_geom.dihedral(p)
     hist, bin = np.histogram(dih, n_bins, (-180, 180))
     bin = bin[range(1, bin.shape[0])]
-    output.lineplot(bin, hist /  set_size, "linear", "pop_1d",
+    output.lineplot(bin, hist / (set_size - init), "linear", "pop_1d",
     "probability", "pop_1d", output_dir)
     np.savetxt(f"./{output_dir}/pop_1d.dat", np.column_stack((bin,
-        hist / set_size)), delimiter=" ", fmt="%.6f")
+        hist / (set_size - init))), delimiter=" ", fmt="%.6f")
 
 
 def force_MSE_dist(baseline, values, output_dir):
