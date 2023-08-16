@@ -37,7 +37,7 @@ def pop2D(mol1, n_bins, CV_list, output_dir, init, set_size):
         bin = np.empty(shape=[CV_list.shape[0]], dtype=int)
         for i_dih in range(CV_list.shape[0]):
             p = np.zeros([CV_list.shape[1], 3])
-            p[0:] = mol1.coords[item+init][CV_list[i_dih][:]]
+            p[0:] = mol1.coords[item][CV_list[i_dih][:]]
             bin[i_dih] = int((calc_geom.dihedral(p) + 180) / bin_width)
         if len(bin) == 1:
             pop[bin[0]] += 1
@@ -46,8 +46,7 @@ def pop2D(mol1, n_bins, CV_list, output_dir, init, set_size):
     pop = pop / (set_size - init)
     x, y = np.meshgrid(np.linspace(-180, 180, n_bins),
                        np.linspace(-180, 180, n_bins))
-    output.heatmap2D(x, y, pop, pop.max(), pop.min(), output_dir, "pop_2d",
-                     "probability", "gray_r")
+    output.heatmap2D(x, y, pop, pop.max(), output_dir, "pop_2d", "gist_heat")
     return None
 
 

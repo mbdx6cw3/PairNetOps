@@ -1,5 +1,11 @@
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 import numpy as np
+
+plt.rcParams["font.size"] = 14
+plt.rcParams['mathtext.fontset'] = 'custom'
+plt.rcParams['mathtext.it'] = 'Arial:italic'
+plt.rcParams['mathtext.rm'] = 'Arial'
 
 def lineplot(x, y, type, x_label, y_label, title, output_dir):
     fig, ax = plt.subplots()
@@ -99,20 +105,18 @@ def scurve(baseline, values, output_dir, output_file):
     return None
 
 
-def heatmap2D(x, y, z, z_max, z_min, output_dir, file, title, cmap):
+def heatmap2D(x, y, z, z_max, output_dir, file, cmap):
     fig, ax = plt.subplots()
-    # TODO: fix this - why do y and x have to this way round
-    c = ax.pcolormesh(x, y, z, cmap=cmap, vmin=z_min, vmax=z_max)
+    c = ax.pcolormesh(x, y, z, norm=colors.LogNorm(vmin=0.00001,vmax=z_max), cmap=cmap)
     ax.axis([x.min(), x.max(), y.min(), y.max()])
-    x_label = "$\u03C6  (degrees)$"
-    y_label = "$\u03C8  (degrees)$"
+    x_label = "$\u03C6$ ($\u00b0$)"
+    y_label = "$\u03C8$ ($\u00b0$)"
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     ax.set_xticks([-180, -90, 0, 90, 180])
     ax.set_yticks([-180, -90, 0, 90, 180])
-    plt.title(title)
     fig.colorbar(c, ax=ax)
-    plt.savefig(f"./{output_dir}/{file}.png")
+    plt.savefig(f"./{output_dir}/{file}.png", bbox_inches="tight")
     return None
 
 
