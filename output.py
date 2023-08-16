@@ -93,7 +93,7 @@ def scurve(baseline, values, output_dir, output_file):
     :return:
     """
     RSE = np.sqrt((baseline-values)**2)
-    hist, bin_edges = np.histogram(RSE,1000,(-0.2,np.amax(RSE)))
+    hist, bin_edges = np.histogram(RSE,1000,(-0.2,100))
     hist = np.cumsum(hist)
     bin_edges = bin_edges[range(1,bin_edges.shape[0])]
     hist = hist/values.shape[0]*100
