@@ -65,7 +65,6 @@ def pop1D(mol1, n_bins, CV_list, output_dir, init, set_size):
 
 
 def force_MSE_dist(baseline, values, output_dir):
-    # TODO... isn't RSE just the same as baseline-values...?
     RSE = np.sqrt((baseline - values)**2)
     MSE = binned_statistic(baseline, RSE, statistic='mean',
         bins=50, range=(-200.0, 200.0))

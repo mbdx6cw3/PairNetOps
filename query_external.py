@@ -67,3 +67,29 @@ def geom(sample_freq, molecule, source, output_dir):
         "ext_geom_sct", output_dir)
     return None
 
+
+def pop2D(sample_freq, n_bins, CV_list, molecule, source, output_dir):
+    data_set = np.load(f'/Users/user/datasets/{source}/{source}_{molecule}.npz')
+    if source == "md17":
+        coords = data_set['R']  # Angstrom
+    elif source == "rmd17":
+        coords = data_set['coords']
+    set_size = int(coords.shape[0] / sample_freq)
+    bin_width = 360 / n_bins
+    pop = np.zeros(shape=(n_bins, n_bins))
+    for item in range(set_size):
+        bin = np.empty(shape=[CV_list.shape[0]], dtype=int)
+        for i_dih in range(CV_list.shape[0]):
+            p = np.zeros([CV_list.shape[1], 3])
+            p[0:] = coords[item][CV_list[i_dih][:]]
+            bin[i_dih] = int((calc_geom.dihedral(p) + 180) / bin_width)
+        if len(bin) == 1:
+            pop[bin[0]] += 1
+        elif len(bin) == 2:
+            pop[bin[1]][bin[0]] += 1
+    pop = pop / (set_size)
+    x, y = np.meshgrid(np.linspace(-180, 180, n_bins),
+                       np.linspace(-180, 180, n_bins))
+    output.heatmap2D(x, y, pop, pop.max(), output_dir, "pop_2d", "gist_heat")
+    return None
+

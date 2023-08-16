@@ -483,8 +483,29 @@ def main():
         sample_freq = int(input("""
             Sample data every n frames:
             > """))
-        query_external.geom(sample_freq, molecule, source, output_dir)
 
+        while True:
+            try:
+                n_CV = int(input("Enter the number of CVs > "))
+                break
+            except ValueError:
+                print("Invalid Value")
+            except n_CV > 2:
+                print("Number of dihedral angles can only be 1 or 2")
+
+        if n_CV == 1:
+            query_external.geom(sample_freq, molecule, source, output_dir)
+        elif n_CV == 2:
+            CV_list = np.empty(shape=[n_CV, 4], dtype=int)
+            for i_CV in range(n_CV):
+                atom_indices = input(f"""
+                Enter atom indices for dihedral {i_CV+1} separated by spaces:
+                e.g. "5 4 6 10"
+                Consult mapping.dat for connectivity.
+                > """)
+                CV_list[i_CV,:] = np.array(atom_indices.split())
+            n_bins = int(input("Enter the number of bins > "))
+            query_external.pop2D(sample_freq, n_bins, CV_list, molecule, source, output_dir)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
