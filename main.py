@@ -167,6 +167,12 @@ def main():
                 break
             except ValueError:
                 print("Invalid Value")
+        while True:
+            try:
+                opt_prop = int(input("Enter % of structures for optimisation > "))
+                break
+            except ValueError:
+                print("Invalid Value")
         output_dir = "qm_input"
         isExist = os.path.exists(output_dir)
         if isExist:
@@ -180,7 +186,7 @@ def main():
 
         mol = read_inputs.Molecule()
         read_inputs.dataset(mol, input_dir, set_size, "md")
-        output.write_gau(mol, init, set_size, output_dir)
+        output.write_gau(mol, init, set_size, output_dir, opt_prop)
 
     elif input_flag == 4:
         print("Analyse QM output.")
