@@ -5,8 +5,8 @@ from scipy.stats import binned_statistic
 
 def dist(mol, set_size, output_dir):
     n_atom = len(mol.atoms)
-    hist, bin = np.histogram(mol.forces.flatten(),200,(np.min(mol.forces.flatten()),
-                                                np.max(mol.forces.flatten())))
+    hist, bin = np.histogram(mol.forces.flatten(),200,(-250,250))
+    #np.max(mol.forces.flatten())))
     bin = bin[range(1, bin.shape[0])]
     bin_width = bin[1] - bin[0]
     output.lineplot(bin, hist / bin_width / set_size / 3.0 / n_atom, "linear",
@@ -14,9 +14,7 @@ def dist(mol, set_size, output_dir):
     np.savetxt(f"./{output_dir}/qm_force_dist.dat",
         np.column_stack((bin, hist / bin_width / set_size / 3.0 / n_atom)),
         delimiter = " ",fmt="%.6f")
-    rel_energies = mol.energies - np.min(mol.energies)
-    hist, bin = np.histogram(rel_energies, 50, (np.min(rel_energies),
-        np.max(rel_energies)))
+    hist, bin = np.histogram(mol.energies, 50, (np.min(mol.energies),np.max(mol.energies)))
     bin = bin[range(1, bin.shape[0])]
     bin_width = bin[1] - bin[0]
     output.lineplot(bin, hist / bin_width / set_size, "linear", "energy",
@@ -25,6 +23,7 @@ def dist(mol, set_size, output_dir):
         np.column_stack((bin, hist / bin_width / set_size)), delimiter = " ",
         fmt="%.6f")
     return None
+
 
 def energy_CV(mol, atom_indices, set_size, output_dir):
     CV_list = np.array(atom_indices.split(), dtype=int)
@@ -35,13 +34,16 @@ def energy_CV(mol, atom_indices, set_size, output_dir):
         if len(CV_list) == 2:
             x_label = "$r_{ij} / \AA$"
             CV[item] = calc_geom.distance(p)
+            #print(item, CV[item], mol.energies[item])
         elif len(CV_list) == 3:
             x_label = "$\u03F4_{ijk}  (degrees)$"
             CV[item] = calc_geom.angle(p)
         elif len(CV_list) == 4:
             x_label = "$\u03C6_{ijkl} (degrees)$"
             CV[item] = calc_geom.dihedral(p)
+            #print(item, CV[item], mol.energies[item])
     # plot distribution, scatter and save data
+    print("MEAN:", np.mean(CV))
     energy = mol.energies[:,0] - np.min(mol.energies[:,0])
     hist, bin = np.histogram(CV, 50, (min(CV), max(CV)))
     bin = bin[range(1, bin.shape[0])]
@@ -51,8 +53,8 @@ def energy_CV(mol, atom_indices, set_size, output_dir):
         np.column_stack((bin, hist / set_size)), delimiter=" ", fmt="%.6f")
     output.scatterplot(CV, energy, "linear", x_label,
         "QM energy (kcal/mol)", "qm_energy_CV_scatter", output_dir)
-    means, edges, counts = binned_statistic(CV, energy, statistic='mean',
-        bins=36, range=(-180.0, 180.0))
+    means, edges, counts = binned_statistic(CV, energy, statistic='min',
+        bins=72, range=(-180.0, 180.0))
     bin_width = edges[1] - edges[0]
     bin_centers = edges[1:] - bin_width / 2
     output.lineplot(bin_centers, means, "linear", x_label,
@@ -74,6 +76,7 @@ def rmsd_dist(mol, set_size):
         for i in range(n_atoms):
             for j in range(i):
                 r_ij = np.linalg.norm(mol.coords[s][i] - mol.coords[s][j])
+                #print(i,j,r_ij)
                 if s == 0:
                     r_ij_0[i,j] = r_ij
                 else:
@@ -143,7 +146,7 @@ def get_pairs(mol, set_size, output_dir):
                 mol.mat_bias[s, _N] = bias
                 mol.mat_eij[s, n_atoms * 3, _N] = bias
 
-                # loop over Cartesian axes
+                # loop over Cartesian axes - don't need this
                 for x in range(0, 3):
                     val = ((mol.coords[s][i][x] - mol.coords[s][j][x]) /
                            mol.mat_r[s, _N])

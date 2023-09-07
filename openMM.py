@@ -70,6 +70,7 @@ def setup(mlp):
         system.addForce(PlumedForce(plumed_script))
 
     # set up simulation
+    print(platform)
     simulation = Simulation(top.topology, system, integrator, platform)
     simulation.context.setPositions(gro.positions)
 

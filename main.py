@@ -109,6 +109,13 @@ def main():
             np.savetxt(f"./{output_dir}/mm_f_test.dat", np.column_stack((
                 mol2.forces.flatten(), mol1.forces.flatten())),
                        delimiter=", ", fmt="%.6f")
+            # calculate MAE
+            mae = 0
+            for actual, prediction in zip(mol2.forces.flatten(), mol1.forces.flatten()):
+                diff = prediction - actual
+                mae += np.sum(abs(diff))
+            mae = mae / len(mol2.forces.flatten())
+            print(f"Force MAE: {mae}, kcal/mol/A")
 
         elif option_flag == 2:
             print("Calculating force error distribution...")
