@@ -528,6 +528,36 @@ def main():
             n_bins = int(input("Enter the number of bins > "))
             query_external.pop2D(sample_freq, n_bins, CV_list, molecule, source, output_dir)
 
+    elif input_flag == 8:
+
+        print("Symmetrise dataset with respect to permutations")
+        # read in set of symmetry equivalent atoms read in the indices
+        equiv_atoms = open("./equiv_atoms.txt", 'r')
+        for line in equiv_atoms:
+            line = line.strip()
+            perm_group = line.split(", ")
+            perm_group = [eval(i) for i in perm_group]
+            print(perm_group)
+
+        while True:
+            try:
+                set_size = int(input("Enter the dataset size > "))
+                break
+            except ValueError:
+                print("Invalid Value")
+
+        # read in QM dataset
+        input_dir = "qm_data"
+        isExist = os.path.exists(input_dir)
+        if not isExist:
+            print("Error - no input files detected")
+            exit()
+        mol = read_inputs.Molecule()
+        read_inputs.dataset(mol, input_dir, set_size, "qm")
+
+        # for each permutation write a new entry
+        print("hello")
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()
