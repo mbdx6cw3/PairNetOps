@@ -39,9 +39,10 @@ def energy_CV(mol, atom_indices, set_size, output_dir):
             x_label = "$\u03F4_{ijk}  (degrees)$"
             CV[item] = calc_geom.angle(p)
         elif len(CV_list) == 4:
-            x_label = "$\u03C6_{ijkl} (degrees)$"
-            CV[item] = calc_geom.dihedral(p)
-            #print(item, CV[item], mol.energies[item])
+            if ((item) % 20) == 0:
+                x_label = "$\u03C6_{ijkl} (degrees)$"
+                CV[item] = calc_geom.dihedral(p)
+                print(item, CV[item], mol.energies[item])
     # plot distribution, scatter and save data
     print("MEAN:", np.mean(CV))
     energy = mol.energies[:,0] - np.min(mol.energies[:,0])
@@ -142,6 +143,7 @@ def get_pairs(mol, set_size, output_dir):
 
                 # internuclear repulsion force matrix
                 mol.mat_NRF[s, _N] = get_NRF(zi, zj, r)
+                #print(i, j, mol.mat_NRF[s,_N])
                 bias = 1 / r
                 mol.mat_bias[s, _N] = bias
                 mol.mat_eij[s, n_atoms * 3, _N] = bias
@@ -164,6 +166,7 @@ def get_pairs(mol, set_size, output_dir):
 
         # normalisation of pair energy biases to give dimensionless quantities
         mol.mat_bias[s] = mol.mat_bias[s] / norm_recip_r
+
         # mol.mat_eij not used anywhere because forces are obtained from E
         mol.mat_eij[s, -1] = mol.mat_bias[s]
 
@@ -196,9 +199,8 @@ def get_pairs(mol, set_size, output_dir):
     return None
 
 
-##### CHECK THIS URGENTLY ######
 def get_NRF(zA, zB, r):
-    _NRF = r and (zA * zB * np.float64(627.5095 * 0.529177) / (r ** 2))
+    _NRF = r and (zA * zB * np.float64(627.509608 * 0.529177) / (r ** 2))
     return _NRF
 
 

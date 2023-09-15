@@ -28,11 +28,12 @@ def main():
             [5] - Convert QM output into ML or MD input.
             [6] - Train or Test an ANN.
             [7] - Query external dataset.
+            [8] - Permutationally augment dataset.
             > """))
     except ValueError:
         print("Invalid Value")
         exit()
-    except input_flag > 7:
+    except input_flag > 8:
         print("Invalid Value")
         exit()
     print()
@@ -255,6 +256,13 @@ def main():
             except ValueError:
                 print("Invalid Value")
 
+        while True:
+            try:
+                step = int(input("Step size > "))
+                break
+            except ValueError:
+                print("Invalid Value")
+
         if option_flag == 1:
             input_dir = "qm_input"
             isExist = os.path.exists(input_dir)
@@ -265,7 +273,7 @@ def main():
             isExist = os.path.exists(output_dir)
             if not isExist:
                 os.makedirs(output_dir)
-            qm2ml.gau2ml(set_size, input_dir, output_dir)
+            qm2ml.gau2ml(set_size, step, input_dir, output_dir)
 
         elif option_flag == 2:
             input_dir = "qm_data"
