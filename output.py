@@ -125,10 +125,14 @@ def write_gau(mol, init, set_size, output_dir, opt_prop):
     # read input text section
     gaussian_spe = open(f"./gaussian_spe.txt", "r")
     text_spe = gaussian_spe.read().strip('\n')
-    gaussian_opt = open(f"./gaussian_opt.txt", "r")
-    text_opt = gaussian_opt.read().strip('\n')
 
-    opt_prop = int(100/opt_prop)
+    # if optimisations requested we also need to read in opt text sections
+    if opt_prop != 0:
+        gaussian_opt = open(f"./gaussian_opt.txt", "r")
+        text_opt = gaussian_opt.read().strip('\n')
+        opt_prop = int(100/opt_prop)
+    else:
+        opt_prop = 10000000
 
     # create QM input files
     for item in range(init, set_size):
@@ -145,6 +149,7 @@ def write_gau(mol, init, set_size, output_dir, opt_prop):
                   f"{mol.coords[item,atom,1]:.8f} "
                   f"{mol.coords[item,atom,2]:.8f}",
                   file=qm_file) # convert to Angstroms
+        ### TODO: remove hard-coding!
         if (item % opt_prop) == 0:
             print(file=qm_file)
             print("5 4 2 3 B", file=qm_file)
