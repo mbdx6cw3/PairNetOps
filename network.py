@@ -386,7 +386,6 @@ class Network(object):
         np.savetxt(f"./{output_dir}/e_test.dat", np.column_stack((
             test_output_E.flatten(), test_prediction[2].flatten())),
             delimiter=", ", fmt="%.6f")
-
         return None
 
 

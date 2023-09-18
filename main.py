@@ -11,7 +11,7 @@ __status__ = 'Development'
 def main():
     import qm2ml, analyseQM, query_external, openMM, read_inputs, output,\
         analyseMD
-    import os, shutil, sys
+    import os, shutil, sys, math
     import numpy as np
     from network import Network
     from datetime import datetime
@@ -531,13 +531,9 @@ def main():
     elif input_flag == 8:
 
         print("Symmetrise dataset with respect to permutations")
-        # read in set of symmetry equivalent atoms read in the indices
-        equiv_atoms = open("./equiv_atoms.txt", 'r')
-        for line in equiv_atoms:
-            line = line.strip()
-            perm_group = line.split(", ")
-            perm_group = [eval(i) for i in perm_group]
-            print(perm_group)
+
+        # read in all symmetry equivalent permutations
+        perms = np.loadtxt("permutations.txt", dtype=int, delimiter=",")
 
         while True:
             try:
@@ -555,8 +551,33 @@ def main():
         mol = read_inputs.Molecule()
         read_inputs.dataset(mol, input_dir, set_size, "qm")
 
-        # for each permutation write a new entry
-        print("hello")
+        # save augmented dataset here
+        output_dir = "qm_data_perm"
+        isExist = os.path.exists(output_dir)
+        if not isExist:
+            os.makedirs(output_dir)
+
+        # write existing data to new data files
+        np.savetxt(f"./{output_dir}/energies.txt", mol.energies, fmt="%.11f")
+        np.savetxt(f"./{output_dir}/forces.txt", np.reshape(mol.forces,(-1,3)), fmt="%.15f")
+        np.savetxt(f"./{output_dir}/coords.txt", np.reshape(mol.coords,(-1,3)), fmt="%.15f")
+
+        # loop over each new permutation and append to form augmented dataset
+        # first line in permutations defines the original permutation
+        for i_perm in range(1,perms.shape[0]):
+            with open(f"./{output_dir}/energies.txt", "a") as energy_file:
+                np.savetxt(energy_file, mol.energies, fmt="%.11f")
+            with open(f"./{output_dir}/forces.txt", "a") as force_file:
+                np.savetxt(force_file, np.reshape(mol.forces,(-1,3)), fmt="%.16f")
+            # for each structure sort atoms by swapping coordinates of equivalent atoms
+            coords = np.copy(mol.coords)
+            for s in range(set_size):
+                for i_atm in range(0,perms.shape[1]):
+                    coords[s][perms[i_perm][i_atm]-1][:] = \
+                        mol.coords[s][perms[0][i_atm]-1][:]
+            with open(f"./{output_dir}/coords.txt", "a") as coord_file:
+                np.savetxt(coord_file, np.reshape(coords,(-1,3)), fmt="%.16f")
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
