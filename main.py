@@ -11,7 +11,7 @@ __status__ = 'Development'
 def main():
     import qm2ml, analyseQM, query_external, openMM, read_inputs, output,\
         analyseMD
-    import os, shutil, sys, math
+    import os, shutil, sys
     import numpy as np
     from network import Network
     from datetime import datetime
@@ -263,6 +263,8 @@ def main():
             except ValueError:
                 print("Invalid Value")
 
+        perm = bool(input("Permutational Symmetry (True or False) > "))
+
         if option_flag == 1:
             input_dir = "qm_input"
             isExist = os.path.exists(input_dir)
@@ -273,7 +275,7 @@ def main():
             isExist = os.path.exists(output_dir)
             if not isExist:
                 os.makedirs(output_dir)
-            qm2ml.gau2ml(set_size, step, input_dir, output_dir)
+            qm2ml.gau2ml(set_size, step, input_dir, output_dir, perm)
 
         elif option_flag == 2:
             input_dir = "qm_data"
