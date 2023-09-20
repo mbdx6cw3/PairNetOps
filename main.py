@@ -263,7 +263,9 @@ def main():
             except ValueError:
                 print("Invalid Value")
 
-        perm = bool(input("Permutational Symmetry (True or False) > "))
+        perm_option = str(input("Shuffle permutations? (Y/N) > "))
+        if perm_option == "Y":
+            perm = True
 
         if option_flag == 1:
             input_dir = "qm_input"

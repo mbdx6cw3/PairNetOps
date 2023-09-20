@@ -18,23 +18,26 @@ def gau2ml(set_size, step, input_dir, output_dir, perm):
         n_atom = len(nuclear_charge_file.readlines())
 
     # read in all symmetry equivalent atoms/groups
-    with open(f"./permutations.txt", "r") as perm_file:
-        n_perm_grp = int(perm_file.readline())
-        n_atm_perm = np.empty(shape=[n_perm_grp], dtype=int)
-        for i_perm in range(0,n_perm_grp):
-            n_atm_perm[i_perm] = int(perm_file.readline())
-            perm_atm = np.empty(shape=[n_perm_grp, n_atm_perm[i_perm]], dtype=int)
-            for i_atm in range(0,n_atm_perm[i_perm]):
-                perm_atm[i_perm,i_atm] = int(perm_file.readline()) -1
-                if perm_atm[i_perm,i_atm] > n_atom:
-                    print("permutation atom out of range")
-                    exit()
-        perm_file.close()
-
-    print(n_perm_grp)
-    print(n_atm_perm[0])
-    print(perm_atm[0][:])
-    #exit()
+    if perm:
+        with open(f"./permutations.txt", "r") as perm_file:
+            max_atm = 10
+            max_symm_atm = 10
+            n_perm_grp = int(perm_file.readline())
+            n_symm = np.zeros(shape=[n_perm_grp], dtype=int)
+            n_symm_atm = np.zeros(shape=[n_perm_grp], dtype=int)
+            perm_atm = np.zeros(shape=[n_perm_grp, max_symm_atm, max_atm], dtype=int)
+            for i_perm in range(0,n_perm_grp):
+                n_symm[i_perm] = int(perm_file.readline())
+                for i_symm in range(0,n_symm[i_perm]):
+                    indices = [eval(i) for i in perm_file.readline().split()]
+                    if i_symm == 0:
+                        n_symm_atm[i_perm] = len(indices)
+                    for i_atm in range(n_symm_atm[i_perm]):
+                        perm_atm[i_perm][i_symm][i_atm] = indices[i_atm]
+                        if perm_atm[i_perm][i_symm][i_atm] > n_atom:
+                            print("Error - permutation atom out of range")
+                            exit()
+            perm_file.close()
 
     # set up arrays
     coord = np.empty(shape=[set_size, n_atom, 3])
@@ -43,7 +46,7 @@ def gau2ml(set_size, step, input_dir, output_dir, perm):
 
     # loop over all Gaussian files, extract energies, forces and coordinates
     for i_file in range(set_size):
-        if ((i_file-1) % step) == 0:
+        if ((i_file) % step) == 0:
             normal_term = False
             qm_file = open(f"./{input_dir}/mol_{i_file+1}.out", "r")
             for line in qm_file:
@@ -65,8 +68,7 @@ def gau2ml(set_size, step, input_dir, output_dir, perm):
                     break
 
             # convert to kcal/mol and print to energy.txt file
-            print(energies[i_file] * 627.509608, file=energy_file)
-
+            print(energies[i_file]*627.509608, file=energy_file)
             # read atomic coordinates
             for i_atom, atom in enumerate(coord_block):
                 coord[i_file, i_atom] = atom.strip('\n').split()[-3:]
@@ -75,34 +77,29 @@ def gau2ml(set_size, step, input_dir, output_dir, perm):
             for i_atom, atom in enumerate(force_block):
                 force[i_file, i_atom] = atom.strip('\n').split()[-3:]
 
-            # swap symmetrically equivalent atoms
+            # make random permutation
             if perm:
-
                 # loop over symmetry groups here
                 for i_perm in range(n_perm_grp):
-
-                    # perform 10 swap moves
+                    # perform 10 swap moves for this symmetry group
                     for i_swap in range(10):
+                        # for this permutation randomly select a symmetry group
+                        old_perm = perm_atm[i_perm][random.randint(0,n_symm[i_perm]-1)][:]
+                        new_perm = perm_atm[i_perm][random.randint(0,n_symm[i_perm]-1)][:]
+                        # swap and save coordinates for these groups
+                        for i_atm in range(n_symm_atm[i_perm]):
+                            temp_coord = np.copy(coord[i_file, old_perm[i_atm]-1])
+                            coord[i_file, old_perm[i_atm]-1] = coord[i_file, new_perm[i_atm]-1]
+                            coord[i_file, new_perm[i_atm]-1] = temp_coord
+                            temp_force = np.copy(force[i_file, old_perm[i_atm]-1])
+                            force[i_file, old_perm[i_atm]-1] = force[i_file, new_perm[i_atm]-1]
+                            force[i_file, new_perm[i_atm]-1] = temp_force
 
-                        # randomly select groups
-                        rand_old = perm_atm[i_perm][random.randint(0,n_atm_perm[0]-1)]
-                        rand_new = perm_atm[i_perm][random.randint(0,n_atm_perm[0]-1)]
-
-                        # swap and save new coordinates
-                        temp = np.copy(coord[i_file, rand_old])
-                        coord[i_file, rand_old] = coord[i_file, rand_new]
-                        coord[i_file, rand_new] = temp
-
-                        # swap save new forces
-                        temp = np.copy(force[i_file, rand_old])
-                        force[i_file, rand_old] = force[i_file, rand_new]
-                        force[i_file, rand_new] = temp
-
-            for i_atom, atom in enumerate(coord_block):
+            # save coordinates and forces (converting to kcal/mol/A)
+            for i_atom in range(n_atom):
                 print(*coord[i_file, i_atom], file=coord_file)
-
-            for i_atom, atom in enumerate(force_block):
                 print(*force[i_file, i_atom]*627.509608/0.529177, file=force_file)
+
             # optional reading of charges
             #for i_atom, atom in enumerate(charge_block):
             #    charge[i_file, i_atom] = atom.strip('\n').split()[-1]
