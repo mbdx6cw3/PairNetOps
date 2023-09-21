@@ -107,7 +107,8 @@ def scurve(baseline, values, output_dir, output_file):
 
 def heatmap2D(x, y, z, z_max, output_dir, file, cmap):
     fig, ax = plt.subplots()
-    c = ax.pcolormesh(x, y, z, norm=colors.LogNorm(vmin=0.00001,vmax=z_max), cmap=cmap)
+    c = ax.pcolormesh(x, y, z, cmap=cmap)
+    # c = ax.pcolormesh(x, y, z, norm=colors.LogNorm(vmin=0.00001,vmax=z_max), cmap=cmap)
     ax.axis([x.min(), x.max(), y.min(), y.max()])
     x_label = "$\u03C6$ ($\u00b0$)"
     y_label = "$\u03C8$ ($\u00b0$)"

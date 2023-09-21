@@ -26,8 +26,7 @@ def fes2D(input_dir, output_dir):
     input.close()
     x, y = np.meshgrid(np.linspace(-180, 180, n_bins_x),
                        np.linspace(-180, 180, n_bins_y))
-    output.heatmap2D(x, y, FE, FE.max(), FE.min(), output_dir, "fes_2d",
-        "Energy (kcal/mol)", "RdBu")
+    output.heatmap2D(x, y, FE, FE.max(), output_dir, "fes_2d", "RdBu")
     return None
 
 def pop2D(mol1, n_bins, CV_list, output_dir, init, set_size):
