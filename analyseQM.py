@@ -100,9 +100,9 @@ def prescale_q(mol, prescale):
     n_pairs = int(n_atoms * (n_atoms - 1) / 2)
     input_NRF = mol.mat_NRF.reshape(-1, n_pairs)
     trainval_input_NRF = np.take(input_NRF, mol.trainval, axis=0)
-    trainval_output_matFE = np.take(mol.output_matFE, mol.trainval, axis=0)
+    trainval_output_eij = np.take(mol.output_eij, mol.trainval, axis=0)
     prescale[4] = np.max(np.abs(trainval_input_NRF))
-    prescale[5] = np.max(np.abs(trainval_output_matFE))
+    prescale[5] = np.max(np.abs(trainval_output_eij))
     return prescale
 
 def get_pairs(mol, set_size, output_dir):
@@ -114,19 +114,15 @@ def get_pairs(mol, set_size, output_dir):
     # assign arrays
     mol.mat_NRF = np.zeros((set_size, _NC2))
     mol.mat_r = np.zeros((set_size, _NC2))
-    mol.mat_bias = np.zeros((set_size, _NC2))
-    mol.mat_FE = np.zeros((set_size, _NC2))
-    mol.mat_eij = np.zeros((set_size, n_atoms * 3 + 1, _NC2))
+    bias = np.zeros((set_size, _NC2))
+    mol.output_eij = np.zeros((set_size, _NC2))
     mol.mat_i = np.zeros(_NC2)
     mol.mat_j = np.zeros(_NC2)
 
     # loop over all structures
     for s in range(set_size):
-
-        mat_Fvals = np.zeros((n_atoms, 3, _NC2))
         _N = -1
-
-        # loop over all atom pairs
+        # calculate the distance matrix, r_ij
         for i in range(n_atoms):
             zi = mol.atoms[i]
             for j in range(i):
@@ -138,61 +134,31 @@ def get_pairs(mol, set_size, output_dir):
                     mol.mat_j[_N] = j
 
                 # calculate interatomic distances, save to distance matrix
-                r = np.linalg.norm(mol.coords[s][i] - mol.coords[s][j])
-                mol.mat_r[s, _N] = r
+                r_ij = np.linalg.norm(mol.coords[s][i] - mol.coords[s][j])
+                mol.mat_r[s, _N] = r_ij
 
-                # internuclear repulsion force matrix
-                mol.mat_NRF[s, _N] = get_NRF(zi, zj, r)
-                #print(i, j, mol.mat_NRF[s,_N])
-                bias = 1 / r
-                mol.mat_bias[s, _N] = bias
-                mol.mat_eij[s, n_atoms * 3, _N] = bias
+                # calculate interatomic nuclear repulsion force (input features)
+                mol.mat_NRF[s, _N] = get_NRF(zi, zj, r_ij)
+                bias[s, _N] = 1 / r_ij
 
-                # loop over Cartesian axes - don't need this
-                for x in range(0, 3):
-                    val = ((mol.coords[s][i][x] - mol.coords[s][j][x]) /
-                           mol.mat_r[s, _N])
+        # calculation normalisation factor, N
+        norm_recip_r = 1 / (np.sum(bias[s] ** 2) ** 0.5)
 
-                    mat_Fvals[i, x, _N] = val
-                    mat_Fvals[j, x, _N] = -val
-                    mol.mat_eij[s, i * 3 + x, _N] = val
-                    mol.mat_eij[s, j * 3 + x, _N] = -val
+        # normalise  pair energy biases to give dimensionless quantities
+        e_ij = bias[s].reshape((1, _NC2)) * norm_recip_r
 
-        mat_Fvals2 = mat_Fvals.reshape(n_atoms * 3, _NC2)
-        forces2 = mol.forces[s].reshape(n_atoms * 3)
-
-        # calculation normalisation factor
-        norm_recip_r = np.sum(mol.mat_bias[s] ** 2) ** 0.5
-
-        # normalisation of pair energy biases to give dimensionless quantities
-        mol.mat_bias[s] = mol.mat_bias[s] / norm_recip_r
-
-        # mol.mat_eij not used anywhere because forces are obtained from E
-        mol.mat_eij[s, -1] = mol.mat_bias[s]
-
-        mat_bias2 = mol.mat_bias[s].reshape((1, _NC2))
-
-        _E = mol.energies[s].reshape(1)
-
-        mat_FE = np.concatenate((mat_Fvals2, mat_bias2), axis=0)
-        _FE = np.concatenate([forces2.flatten(), _E.flatten()])
-
-        # why not just matrix multiply mat_bias2 and _FE here because we don't
-        # need the forces anyway?
-        # do we even need to scale the energy with the forces?
-        decomp_FE = np.matmul(np.linalg.pinv(mat_FE), _FE)
-        mol.mat_FE[s] = decomp_FE
-        mol.output_matFE = mol.mat_FE.reshape(-1, _NC2)
+        # reference energy biases, will be predicted by the trained potential
+        mol.output_eij[s] = np.matmul(np.linalg.pinv(e_ij), mol.energies[s])
 
     # flatten output_matFE instead below?
-    output.scatterplot([mol.mat_r.flatten()], [mol.mat_FE.flatten()], "linear",
-        "$r_{ij}$ / $\AA$", "q / kcal/mol/$\AA$", "q_rij", output_dir)
-    hist, bin = np.histogram(mol.mat_FE.flatten(), 200,
-        (np.min(mol.mat_FE.flatten()), np.max(mol.mat_FE.flatten())))
+    output.scatterplot([mol.mat_r.flatten()], [mol.output_eij.flatten()], "linear",
+        "$r_{ij}$ / $\AA$", "$e_{ij}$ / kcal/mol", "q_rij", output_dir)
+    hist, bin = np.histogram(mol.output_eij.flatten(), 200,
+        (np.min(mol.output_eij.flatten()), np.max(mol.output_eij.flatten())))
     bin = bin[range(1, bin.shape[0])]
     bin_width = bin[1] - bin[0]
     output.lineplot(bin, hist / bin_width / _NC2 / set_size, "linear",
-        "q / kcal/mol/$\AA$", "probability", "q_dist", output_dir)
+        "$e_{ij}$ / kcal/mol", "probability", "q_dist", output_dir)
     np.savetxt(f"./{output_dir}/q_dist.dat",
                np.column_stack((bin, hist / bin_width / _NC2 / set_size)),
                delimiter=" ", fmt="%.6f")
@@ -203,36 +169,4 @@ def get_NRF(zA, zB, r):
     _NRF = r and (zA * zB * np.float64(627.509608 * 0.529177) / (r ** 2))
     return _NRF
 
-
-def get_forces(mol, all_coords, all_prediction):
-    '''Take per-atom pairwise decomposed F and convert them back into
-    Cart forces.'''
-
-    n_atoms = len(mol.atoms)
-    _NC2 = int(n_atoms * (n_atoms - 1) / 2)
-    all_recomb_F = np.zeros((len(all_coords), n_atoms, 3))
-
-    # loop over all structures
-    s = -1
-    for coords, prediction in zip(all_coords, all_prediction):
-        s += 1
-        # set projection matrix for this structure
-        mat_eij = np.zeros((n_atoms, 3, _NC2))
-        _N = -1
-        # loop over all pairs
-        for i in range(n_atoms):
-            for j in range(i):
-                _N += 1
-                r = np.linalg.norm(coords[i]-coords[j])
-                # loop over Cartesian axes
-                for x in range(0, 3):
-                    eij = ((coords[i][x] - coords[j][x]) / r)
-                    mat_eij[i,x,_N] = eij
-                    mat_eij[j,x,_N] = -eij
-
-        for i in range(n_atoms):
-            recomb_F = np.dot(mat_eij[i], prediction)
-            all_recomb_F[s,i] = recomb_F
-
-    return all_recomb_F
 

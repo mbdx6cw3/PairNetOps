@@ -79,7 +79,7 @@ def gau2ml(set_size, step, input_dir, output_dir, perm):
 
             # make random permutation
             if perm:
-                # loop over symmetry groups here
+                # loop through symmetry groups
                 for i_perm in range(n_perm_grp):
                     # perform 10 swap moves for this symmetry group
                     for i_swap in range(10):

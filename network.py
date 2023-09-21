@@ -88,11 +88,11 @@ class Energy(Layer):
         return E
 
 
-class Q(Layer):
-    def __init__(self, _NC2, max_Q, **kwargs):
-        super(Q, self).__init__()
+class Eij(Layer):
+    def __init__(self, _NC2, max_Eij, **kwargs):
+        super(Eij, self).__init__()
         self._NC2 = _NC2
-        self.max_Q = max_Q
+        self.max_Eij = max_Eij
 
     def compute_output_shape(self, input_shape):
         batch_size = input_shape[0]
@@ -101,7 +101,7 @@ class Q(Layer):
     def call(self, decomp_scaled):
         decomp_scaled = tf.reshape(decomp_scaled,
                 shape=(tf.shape(decomp_scaled)[0], -1))
-        decomp = (decomp_scaled - 0.5) * (2 * self.max_Q)
+        decomp = (decomp_scaled - 0.5) * (2 * self.max_Eij)
         decomp = tf.reshape(decomp,
                 shape=(tf.shape(decomp_scaled)[0], self._NC2)) #reshape to _NC2
 
@@ -121,24 +121,6 @@ class ERecomposition(Layer):
     def call(self, coords_decompFE):
         coords, decompFE = coords_decompFE
         decompFE = tf.reshape(decompFE, shape=(tf.shape(decompFE)[0], -1))
-
-        eij_F, r_flat = Projection(self.n_atoms, self._NC2)(coords)
-        recip_r_flat = 1 / r_flat
-        norm_recip_r = tf.reduce_sum(recip_r_flat ** 2, axis=1,
-                keepdims=True) ** 0.5
-        eij_E = recip_r_flat / norm_recip_r
-        recompE = tf.einsum('bi, bi -> b', eij_E, decompFE)
-        recompE = tf.reshape(recompE, shape=(tf.shape(coords)[0], 1))
-        return recompE
-
-
-class Projection(Layer):
-    def __init__(self, n_atoms, _NC2, **kwargs):
-        super(Projection, self).__init__()
-        self.n_atoms = n_atoms
-        self._NC2 = _NC2
-
-    def call(self, coords):
         a = tf.expand_dims(coords, 2)
         b = tf.expand_dims(coords, 1)
         diff = a - b
@@ -150,96 +132,13 @@ class Projection(Layer):
         diff_flat = tf.reshape(nonzero_values,
                 shape=(tf.shape(tri)[0], -1)) # reshape to _NC2
         r_flat = diff_flat**0.5
-
-        r = Triangle(self.n_atoms)(r_flat)
-        r2 = tf.expand_dims(r, 3)
-        # replace zeros with ones
-        safe = tf.where(tf.equal(r2, 0.), 1., r2)
-        eij_F = diff / safe
-
-        # put eij_F in format (batch,3N,NC2), some NC2 will be zeros
-        new_eij_F = []
-        n_atoms = coords.shape.as_list()[1]
-        for i in range(n_atoms):
-            for x in range(3):
-                atom_i = eij_F[:,i,:,x]
-                s = []
-                _N = -1
-                count = 0
-                a = [k for k in range(n_atoms) if k != i]
-                for i2 in range(n_atoms):
-                    for j2 in range(i2):
-                        _N += 1
-                        if i2 == i:
-                            s.append(atom_i[:,a[count]])
-                            count += 1
-                        elif j2 == i:
-                            s.append(atom_i[:,a[count]])
-                            count += 1
-                        else:
-                            s.append(tf.zeros_like(atom_i[:,0]))
-                s = tf.stack(s)
-                s = tf.transpose(s)
-                new_eij_F.append(s)
-
-        eij_F = tf.stack(new_eij_F)
-        eij_F = tf.transpose(eij_F, perm=[1,0,2]) # b,3N,NC2
-        return eij_F, r_flat
-
-
-class Triangle(Layer):
-    def __init__(self, n_atoms, **kwargs):
-        super(Triangle, self).__init__()
-        self.n_atoms = n_atoms
-
-    def compute_output_shape(self, input_shape):
-        batch_size = input_shape[0]
-        return (batch_size, self.n_atoms, self.n_atoms)
-
-    def call(self, decompFE):
-        '''Convert flat NC2 to lower and upper triangle sq matrix, this
-        is used in get_FE_eij_matrix to get recomposedFE
-        https://stackoverflow.com/questions/40406733/
-                tensorflow-equivalent-for-this-matlab-code
-        '''
-        #put batch dimensions last
-        decompFE = tf.transpose(decompFE, tf.concat([[tf.rank(decompFE)-1],
-                tf.range(tf.rank(decompFE)-1)], axis=0))
-        input_shape = tf.shape(decompFE)[0]
-        #compute size of matrix that would have this upper triangle
-        matrix_size = (1 + tf.cast(tf.sqrt(tf.cast(input_shape*8+1,
-                tf.float32)), tf.int32)) // 2
-        matrix_size = tf.identity(matrix_size)
-        #compute indices for whole matrix and upper diagonal
-        index_matrix = tf.reshape(tf.range(matrix_size**2),
-                [matrix_size, matrix_size])
-
-        tri1 = tf.linalg.band_part(index_matrix, -1, 0) #lower
-        diag = tf.linalg.band_part(index_matrix, 0, 0) #diag of ones
-        tri2 = tri1 - diag #get lower without diag of ones
-        nonzero_indices = tf.where(tf.not_equal(tri2, tf.zeros_like(tri2)))
-        nonzero_values = tf.gather_nd(tri2, nonzero_indices)
-        reshaped_nonzero_values = tf.reshape(nonzero_values, [-1])
-
-        batch_dimensions = tf.shape(decompFE)[1:]
-        return_shape_transposed = tf.concat([[matrix_size, matrix_size],
-                batch_dimensions], axis=0)
-        #fill everything else with zeros; later entries get priority
-        #in dynamic_stitch
-        result_transposed = tf.reshape(tf.dynamic_stitch([index_matrix,
-                #upper_triangular_indices[1:]
-                reshaped_nonzero_values
-                ],
-                [tf.zeros(return_shape_transposed, dtype=decompFE.dtype),
-                decompFE]), return_shape_transposed)
-        #Transpose the batch dimensions to be first again
-        Q = tf.transpose(result_transposed, tf.concat(
-                [tf.range(2, tf.rank(decompFE)+1), [0,1]], axis=0))
-        Q2 = tf.transpose(result_transposed, tf.concat(
-                [tf.range(2, tf.rank(decompFE)+1), [1,0]], axis=0))
-        Q3 = Q + Q2
-
-        return Q3
+        recip_r_flat = 1 / r_flat
+        norm_recip_r = tf.reduce_sum(recip_r_flat ** 2, axis=1,
+                keepdims=True) ** 0.5
+        eij_E = recip_r_flat / norm_recip_r
+        recompE = tf.einsum('bi, bi -> b', eij_E, decompFE)
+        recompE = tf.reshape(recompE, shape=(tf.shape(coords)[0], 1))
+        return recompE
 
 
 class Force(Layer):
@@ -275,8 +174,8 @@ class Network(object):
         val_energies = np.take(mol.orig_energies, mol.val, axis=0)
         train_forces = np.take(mol.forces, mol.train, axis=0)
         val_forces = np.take(mol.forces, mol.val, axis=0)
-        train_output_matFE = np.take(mol.output_matFE, mol.train, axis=0)
-        val_output_matFE = np.take(mol.output_matFE, mol.val, axis=0)
+        train_output_eij = np.take(mol.output_eij, mol.train, axis=0)
+        val_output_eij = np.take(mol.output_eij, mol.val, axis=0)
 
         # create arrays of nuclear charges for different sets
         train_atoms = np.tile(atoms, (len(train_coords), 1))
@@ -301,8 +200,8 @@ class Network(object):
                 beta_1=0.9, beta_2=0.999, epsilon=1e-7, amsgrad=False)
 
         # define loss function
-        model.compile(loss={'force': 'mse', 'q': 'mse', 'energy': 'mse'},
-            loss_weights={'force': loss_weights[0], 'q': loss_weights[1],
+        model.compile(loss={'force': 'mse', 'eij': 'mse', 'energy': 'mse'},
+            loss_weights={'force': loss_weights[0], 'eij': loss_weights[1],
             'energy': loss_weights[2]}, optimizer=optimizer)
 
         # print out the model here
@@ -311,18 +210,18 @@ class Network(object):
 
         # train the network
         result = model.fit([train_coords, train_atoms],
-            [train_forces, train_output_matFE, train_energies],
+            [train_forces, train_output_eij, train_energies],
             validation_data=([val_coords, val_atoms], [val_forces,
-            val_output_matFE, val_energies,]), epochs=epochs,
+            val_output_eij, val_energies,]), epochs=epochs,
             verbose=2, batch_size=batch_size,callbacks=[mc,rlrop])
 
         # plot loss curves
         model_loss = result.history['loss']
         model_val_loss = result.history['val_loss']
         np.savetxt(f"./{output_dir1}/loss.dat", np.column_stack((np.arange
-            (epochs), result.history['force_loss'], result.history['q_loss'],
+            (epochs), result.history['force_loss'], result.history['eij_loss'],
             result.history['energy_loss'], result.history['loss'],
-            result.history['val_force_loss'], result.history['val_q_loss'],
+            result.history['val_force_loss'], result.history['val_eij_loss'],
             result.history['val_energy_loss'],result.history['val_loss'] )),
             delimiter=" ", fmt="%.6f")
         output.twolineplot(np.arange(epochs),np.arange(epochs),model_loss,
@@ -338,32 +237,21 @@ class Network(object):
         atoms = np.array([float(i) for i in mol.atoms], dtype='float32')
         test_coords = np.take(mol.coords, mol.test, axis=0)
         test_atoms = np.tile(atoms, (len(test_coords), 1))
-        test_output_matFE = np.take(mol.output_matFE, mol.test, axis=0)
+        test_output_eij = np.take(mol.output_eij, mol.test, axis=0)
         test_prediction = model.predict([test_coords, test_atoms])
 
         print(f"\nErrors over {len(mol.test)} test structures")
         print(f"                MAE            RMS            MSD          MSE")
 
         # q test output
-        mae, rms, msd = Network.summary(test_output_matFE.flatten(),
+        mae, rms, msd = Network.summary(test_output_eij.flatten(),
                 test_prediction[1].flatten())
-        print(f"q: {mae}    {rms}    {msd}    {rms ** 2}")
-        output.scurve(test_output_matFE.flatten(), test_prediction[1].flatten(),
-            output_dir, "q_scurve")
-        np.savetxt(f"./{output_dir}/q_test.dat", np.column_stack((
-            test_output_matFE.flatten(), test_prediction[1].flatten())),
+        print(f"eij: {mae}    {rms}    {msd}    {rms ** 2}")
+        output.scurve(test_output_eij.flatten(), test_prediction[1].flatten(),
+            output_dir, "eij_scurve")
+        np.savetxt(f"./{output_dir}/eij_test.dat", np.column_stack((
+            test_output_eij.flatten(), test_prediction[1].flatten())),
             delimiter=" ", fmt="%.6f")
-
-        test_output_matr = np.take(mol.mat_r, mol.test, axis=0)
-        test_output_i = np.tile(mol.mat_i, (len(test_coords), 1))
-        test_output_j = np.tile(mol.mat_j, (len(test_coords), 1))
-        np.savetxt(f"./{output_dir}/q_test_rij.dat", np.column_stack((
-            test_output_matr.flatten(), test_prediction[1].flatten(),
-            test_output_matFE.flatten(), test_output_i.flatten(),
-            test_output_j.flatten())), delimiter=" ", fmt="%.6f")
-
-        # get recombined forces from predicted q's
-        recomb_F = analyseQM.get_forces(mol, test_coords, test_prediction[1])
 
         # force test output
         test_output_F = np.take(mol.forces, mol.test, axis=0)
@@ -433,7 +321,7 @@ class Network(object):
             name='net_layerQ')(connected_layer)
 
         # calculated unscaled q's
-        unscale_qFE_layer = Q(n_pairs, max_matFE, name='unscale_qF_layer')\
+        unscale_qFE_layer = Eij(n_pairs, max_matFE, name='unscale_qF_layer')\
             (connected_layer)
 
         # calculate the scaled energy from the coordinates and unscaled qFE

@@ -28,7 +28,6 @@ def main():
             [5] - Convert QM output into ML or MD input.
             [6] - Train or Test an ANN.
             [7] - Query external dataset.
-            [8] - Permutationally augment dataset.
             > """))
     except ValueError:
         print("Invalid Value")
@@ -531,56 +530,6 @@ def main():
                 CV_list[i_CV,:] = np.array(atom_indices.split())
             n_bins = int(input("Enter the number of bins > "))
             query_external.pop2D(sample_freq, n_bins, CV_list, molecule, source, output_dir)
-
-    elif input_flag == 8:
-
-        print("Symmetrise dataset with respect to permutations")
-
-        # read in all symmetry equivalent permutations
-        perms = np.loadtxt("permutations.txt", dtype=int, delimiter=",")
-
-        while True:
-            try:
-                set_size = int(input("Enter the dataset size > "))
-                break
-            except ValueError:
-                print("Invalid Value")
-
-        # read in QM dataset
-        input_dir = "qm_data"
-        isExist = os.path.exists(input_dir)
-        if not isExist:
-            print("Error - no input files detected")
-            exit()
-        mol = read_inputs.Molecule()
-        read_inputs.dataset(mol, input_dir, set_size, "qm")
-
-        # save augmented dataset here
-        output_dir = "qm_data_perm"
-        isExist = os.path.exists(output_dir)
-        if not isExist:
-            os.makedirs(output_dir)
-
-        # write existing data to new data files
-        np.savetxt(f"./{output_dir}/energies.txt", mol.energies, fmt="%.11f")
-        np.savetxt(f"./{output_dir}/forces.txt", np.reshape(mol.forces,(-1,3)), fmt="%.15f")
-        np.savetxt(f"./{output_dir}/coords.txt", np.reshape(mol.coords,(-1,3)), fmt="%.15f")
-
-        # loop over each new permutation and append to form augmented dataset
-        # first line in permutations defines the original permutation
-        for i_perm in range(1,perms.shape[0]):
-            with open(f"./{output_dir}/energies.txt", "a") as energy_file:
-                np.savetxt(energy_file, mol.energies, fmt="%.11f")
-            with open(f"./{output_dir}/forces.txt", "a") as force_file:
-                np.savetxt(force_file, np.reshape(mol.forces,(-1,3)), fmt="%.16f")
-            # for each structure sort atoms by swapping coordinates of equivalent atoms
-            coords = np.copy(mol.coords)
-            for s in range(set_size):
-                for i_atm in range(0,perms.shape[1]):
-                    coords[s][perms[i_perm][i_atm]-1][:] = \
-                        mol.coords[s][perms[0][i_atm]-1][:]
-            with open(f"./{output_dir}/coords.txt", "a") as coord_file:
-                np.savetxt(coord_file, np.reshape(coords,(-1,3)), fmt="%.16f")
 
 
 # Press the green button in the gutter to run the script.
