@@ -17,6 +17,9 @@ def main():
     from datetime import datetime
     from keras.models import Model, load_model
     import tensorflow as tf
+    from itertools import islice
+    import calc_geom
+    import math
 
     # read primary user input
     try:
@@ -28,6 +31,7 @@ def main():
             [5] - Convert QM output into ML or MD input.
             [6] - Train or Test an ANN.
             [7] - Query external dataset.
+            [8] - Generate torsional scan QM input.
             > """))
     except ValueError:
         print("Invalid Value")
@@ -265,6 +269,8 @@ def main():
         perm_option = str(input("Shuffle permutations? (Y/N) > "))
         if perm_option == "Y":
             perm = True
+        else:
+            perm = False
 
         if option_flag == 1:
             input_dir = "qm_input"
@@ -530,6 +536,62 @@ def main():
                 CV_list[i_CV,:] = np.array(atom_indices.split())
             n_bins = int(input("Enter the number of bins > "))
             query_external.pop2D(sample_freq, n_bins, CV_list, molecule, source, output_dir)
+
+    elif input_flag == 8:
+
+        atom_indices = input(f"""
+            Enter atom indices for dihedral separated by spaces:
+            e.g. "5 4 6 10"
+            Consult mapping.dat for connectivity.
+            > """)
+        CV_list = [eval(i) for i in atom_indices.split()]
+
+        atom_indices = input(f"""
+            Enter atom indices to rotate separated by spaces:
+            e.g. "6 10 11"
+            Consult mapping.dat for connectivity.
+            > """)
+        rotate_list = [eval(i) for i in atom_indices.split()]
+
+        spacing = int(input("Enter the interval (degrees) > "))
+        bins = int(360/spacing)
+        CV = np.empty(shape=[bins])
+
+        with open(f"./nuclear_charges.txt", "r") as nuclear_charge_file:
+            n_atom = len(nuclear_charge_file.readlines())
+
+        input_dir = "qm_input"
+        isExist = os.path.exists(input_dir)
+        if not isExist:
+            print("Error - no input files detected")
+            exit()
+
+        qm_file = open(f"./{input_dir}/mol_0.out", "r")
+        # find and extract coordinates
+        for line in qm_file:
+            if "Input orientation:" in line:
+                coord_block = list(islice(qm_file, 4 + n_atom))[-n_atom:]
+        coord = np.empty(shape=[bins, n_atom, 3])
+        for i_atom, atom in enumerate(coord_block):
+            coord[0, i_atom] = atom.strip('\n').split()[-3:]
+
+        p = np.zeros([len(CV_list), 3])
+        p[0:] = coord[0][CV_list[:]]
+        CV[0] = calc_geom.dihedral(p)
+        print("Initial torsion angle =", CV[0], "degrees")
+        axis = p[1] - p[2]
+        print(axis)
+
+        # provide list of angles here to get list of rotation matrices
+        rotation_matrix = generate_rotation_matrix(math.radians(5), axis)
+        print(rotation_matrix)
+
+def generate_rotation_matrix(angle, axis):
+    from scipy.spatial.transform import Rotation as R
+    import numpy as np
+    rotation = R.from_rotvec(angle * np.array(axis))
+    return rotation.as_matrix()
+
 
 
 # Press the green button in the gutter to run the script.

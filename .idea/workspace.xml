@@ -6,28 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="e4d0c316-b7d8-40bf-9989-d41f09c06053" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analyseQM.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyseQM.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ann_params.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ann_params.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/equiv_atoms.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/md_params.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_1.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_10.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_11.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_12.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_13.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_14.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_15.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_16.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_17.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_18.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_19.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_2.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_20.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_3.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_4.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_5.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_6.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_7.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_8.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_input/mol_9.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nuclear_charges.txt" beforeDir="false" afterPath="$PROJECT_DIR$/nuclear_charges.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/permutations.txt" beforeDir="false" afterPath="$PROJECT_DIR$/permutations.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_data/coords.txt" beforeDir="false" afterPath="$PROJECT_DIR$/qm_data/coords.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_data/energies.txt" beforeDir="false" afterPath="$PROJECT_DIR$/qm_data/energies.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_data/forces.txt" beforeDir="false" afterPath="$PROJECT_DIR$/qm_data/forces.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

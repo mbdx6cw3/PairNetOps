@@ -166,7 +166,7 @@ def get_pairs(mol, set_size, output_dir):
 
 
 def get_NRF(zA, zB, r):
-    _NRF = r and (zA * zB * np.float64(627.509608 * 0.529177) / (r ** 2))
+    _NRF = r and (zA * zB * np.float64(627.509608) / (r ** 2))
     return _NRF
 
 
