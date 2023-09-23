@@ -539,59 +539,102 @@ def main():
 
     elif input_flag == 8:
 
+        element = {1: "H", 6: "C", 7: "N", 8: "O"}
+        nuclear_charge_file = open("./nuclear_charges.txt", "r")
+        atoms = []
+        atom_names = []
+        for atom in nuclear_charge_file:
+            atoms.append(int(atom))
+            atom_names.append(element[atoms[-1]])
+        n_atom = len(atoms)
+
         atom_indices = input(f"""
             Enter atom indices for dihedral separated by spaces:
             e.g. "5 4 6 10"
             Consult mapping.dat for connectivity.
             > """)
-        CV_list = [eval(i) for i in atom_indices.split()]
+        CV_list = [eval(i_atm) for i_atm in atom_indices.split()]
 
         atom_indices = input(f"""
             Enter atom indices to rotate separated by spaces:
             e.g. "6 10 11"
             Consult mapping.dat for connectivity.
             > """)
-        rotate_list = [eval(i) for i in atom_indices.split()]
+        rot_list = [eval(i_rot) for i_rot in atom_indices.split()]
 
         spacing = int(input("Enter the interval (degrees) > "))
-        bins = int(360/spacing)
-        CV = np.empty(shape=[bins])
+        set_size = int(360/spacing)
+        CV = np.empty(shape=[set_size])
 
-        with open(f"./nuclear_charges.txt", "r") as nuclear_charge_file:
-            n_atom = len(nuclear_charge_file.readlines())
-
-        input_dir = "qm_input"
-        isExist = os.path.exists(input_dir)
+        output_dir = "qm_input"
+        isExist = os.path.exists(output_dir)
         if not isExist:
             print("Error - no input files detected")
             exit()
 
-        qm_file = open(f"./{input_dir}/mol_0.out", "r")
-        # find and extract coordinates
+        # open initial structure, find and extract coordinates
+        qm_file = open(f"./mol_1.out", "r")
         for line in qm_file:
             if "Input orientation:" in line:
                 coord_block = list(islice(qm_file, 4 + n_atom))[-n_atom:]
-        coord = np.empty(shape=[bins, n_atom, 3])
+        coord = np.empty(shape=[set_size, n_atom, 3])
         for i_atom, atom in enumerate(coord_block):
-            coord[0, i_atom] = atom.strip('\n').split()[-3:]
-
+            coord[:, i_atom] = atom.strip('\n').split()[-3:]
         p = np.zeros([len(CV_list), 3])
         p[0:] = coord[0][CV_list[:]]
         CV[0] = calc_geom.dihedral(p)
         print("Initial torsion angle =", CV[0], "degrees")
-        axis = p[1] - p[2]
-        print(axis)
+        axis = (p[2] - p[1])/ np.linalg.norm(p[2] - p[1])
+        # loop through all structures
+        for i_angle in range(1, set_size):
+            # determine rotation angle for this structure (radians)
+            angle = (i_angle * spacing) * np.pi / 180
+            # generate rotation matrix for this structure
+            mat_rot = generate_rotation_matrix(angle, axis)
+            # loop through atoms to be rotated
+            for i_atm in range(len(rot_list)):
+                # shift to new origin
+                old_coord = coord[0][rot_list[i_atm]][:] - coord[0][CV_list[2]][:]
+                # rotate old coordinates using rotation matrix
+                new_coord = np.matmul(mat_rot,old_coord)
+                # new_coord2 = mat_rot.dot(old_coord.T) # equivalent approach
+                # shift back to old origin
+                coord[i_angle][rot_list[i_atm]][:] = new_coord + coord[0][CV_list[2]][:]
 
-        # provide list of angles here to get list of rotation matrices
-        rotation_matrix = generate_rotation_matrix(math.radians(5), axis)
-        print(rotation_matrix)
+        # write gaussian output
+        gaussian_opt = open(f"./gaussian_opt.txt", "r")
+        text_opt = gaussian_opt.read().strip('\n')
+        opt_prop = 1
+        CV_list = [i + 1 for i in CV_list]
+        for item in range(set_size):
+            text = text_opt
+            qm_file = open(f"./{output_dir}/mol_{item + 1}.gjf", "w")
+            new_text = text.replace("index", f"{item + 1}")
+            print(new_text, file=qm_file)
+            for atom in range(n_atom):
+                print(f"{atom_names[atom]} "
+                      f"{coord[item, atom, 0]:.8f} "
+                      f"{coord[item, atom, 1]:.8f} "
+                      f"{coord[item, atom, 2]:.8f}",
+                      file=qm_file)  # convert to Angstroms
+            if (item % opt_prop) == 0:
+                print(file=qm_file)
+                print(*CV_list[:], "B", file=qm_file)
+                print(*CV_list[:], "F", file=qm_file)
+            print(file=qm_file)
+            qm_file.close()
+            output.write_pdb(coord[item][:][:], "sali", 1, atoms, atom_names,
+                             f"./{output_dir}/mol_{item + 1}.pdb", "w")
+        return None
+
 
 def generate_rotation_matrix(angle, axis):
+    #https://en.wikipedia.org/wiki/Rotation_matrix
+    #"Rotation matrix from axis and angle"
     from scipy.spatial.transform import Rotation as R
     import numpy as np
     rotation = R.from_rotvec(angle * np.array(axis))
     return rotation.as_matrix()
-
 
 
 # Press the green button in the gutter to run the script.

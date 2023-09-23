@@ -77,7 +77,6 @@ def rmsd_dist(mol, set_size):
         for i in range(n_atoms):
             for j in range(i):
                 r_ij = np.linalg.norm(mol.coords[s][i] - mol.coords[s][j])
-                #print(i,j,r_ij)
                 if s == 0:
                     r_ij_0[i,j] = r_ij
                 else:
@@ -88,6 +87,7 @@ def rmsd_dist(mol, set_size):
     return rmsd_dist
 
 def prescale_e(mol, energies, forces):
+    # TODO: there's no reason to scale the energies in this way any more.
     min_e, max_e = np.min(energies), np.max(energies)
     min_f, max_f = np.min(forces), np.max(forces)
     min_f = np.min(np.abs(forces))
@@ -139,6 +139,7 @@ def get_pairs(mol, set_size, output_dir):
 
                 # calculate interatomic nuclear repulsion force (input features)
                 mol.mat_NRF[s, _N] = get_NRF(zi, zj, r_ij)
+                # TODO: replace above with single line
                 bias[s, _N] = 1 / r_ij
 
         # calculation normalisation factor, N
@@ -165,8 +166,10 @@ def get_pairs(mol, set_size, output_dir):
     return None
 
 
+# TODO: this function will be removed.
 def get_NRF(zA, zB, r):
-    _NRF = r and (zA * zB * np.float64(627.509608) / (r ** 2))
+    _NRF = r and (zA * zB * np.float64(627.5095 * 0.529177) / (r ** 2))
     return _NRF
+
 
 

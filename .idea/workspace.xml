@@ -7,14 +7,16 @@
     <list default="true" id="e4d0c316-b7d8-40bf-9989-d41f09c06053" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analyseQM.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyseQM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ann_params.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ann_params.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/equiv_atoms.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nuclear_charges.txt" beforeDir="false" afterPath="$PROJECT_DIR$/nuclear_charges.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/permutations.txt" beforeDir="false" afterPath="$PROJECT_DIR$/permutations.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_data/coords.txt" beforeDir="false" afterPath="$PROJECT_DIR$/qm_data/coords.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_data/energies.txt" beforeDir="false" afterPath="$PROJECT_DIR$/qm_data/energies.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qm_data/forces.txt" beforeDir="false" afterPath="$PROJECT_DIR$/qm_data/forces.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output.py" beforeDir="false" afterPath="$PROJECT_DIR$/output.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_data/charges.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_data/coords.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_data/energies.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_data/errors.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_data/forces.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/qm_input_temp/mol_0.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/trained_model/ann_params.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

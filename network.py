@@ -43,6 +43,7 @@ class CoordsToNRF(Layer):
         self.max_NRF = max_NRF
         self._NC2 = _NC2
         self.n_atoms = n_atoms
+        # TODO: this can be removed
         self.au2kcalmola = 627.5095 * 0.529177
 
     def compute_output_shape(self, input_shape):
@@ -64,7 +65,7 @@ class CoordsToNRF(Layer):
                 shape=(tf.shape(tri)[0], -1)) #reshape to _NC2
         r = diff_flat ** 0.5
         recip_r2 = 1 / r ** 2
-
+        # TODO: this can be removed and simplified - make consistent with other
         _NRF = (((atom_nc * self.au2kcalmola) * recip_r2) /
                 self.max_NRF) #scaled
         _NRF = tf.reshape(_NRF,
@@ -261,8 +262,8 @@ class Network(object):
         output.scurve(test_output_F.flatten(), test_prediction[0].flatten(),
             output_dir, "f_scurve")
         np.savetxt(f"./{output_dir}/f_test.dat", np.column_stack((
-            test_output_F.flatten(), test_prediction[0].flatten(),
-            recomb_F.flatten())), delimiter=" ", fmt="%.6f")
+            test_output_F.flatten(), test_prediction[0].flatten())),
+            delimiter=" ", fmt="%.6f")
 
         # energy test output
         test_output_E = np.take(mol.orig_energies, mol.test, axis=0)

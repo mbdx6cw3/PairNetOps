@@ -65,7 +65,7 @@ def gro(n_atoms, vectors, time, coords, atom_names, output_dir, file_name):
     gro_file.close()
 
 
-def write_pdb(coords, resname, resid, atoms, filename, open_type):
+def write_pdb(coords, resname, resid, atoms, atom_names, filename, open_type):
     '''
     Write 3D coords in .pdb format. Provide the resname, resid, atoms
     and filename.
@@ -75,7 +75,7 @@ def write_pdb(coords, resname, resid, atoms, filename, open_type):
         outfile.write('\n'.join(['{:6s}{:5d} {:^4s}{:1s}{:3s}' \
                 ' {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}' \
                 '{:6.0f}{:6.0f}          {:>2s}{:2s}'.format(
-                    'ATOM', i+1, mol.atom_names[i], ' ', resname[0:3],
+                    'ATOM', i+1, atom_names[i], ' ', resname[0:3],
                     'A', int(str(resid)[0:4]), ' ',
                     coords[i][0], coords[i][1], coords[i][2],
                     1, 1, ' ', ' ')]) + '\n')
