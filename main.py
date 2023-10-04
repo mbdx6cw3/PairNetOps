@@ -46,22 +46,32 @@ def main():
 
         startTime = datetime.now()
         option_flag = int(input("""Run MD simulation.
-            [1] - Use an empirical potential.
-            [2] - Use a PairFENet potential.
+            [1] - Use empirical potential.
+            [2] - Use PairFENet potential.
+            [3] - Use ANI.
             > """))
 
         if option_flag == 1:
-            print("Use an empirical potential.")
-            mlp = False
+            print("Use empirical potential.")
+            pairfenet = False
+            ani = False
         elif option_flag == 2:
-            print("Use a PairFENet potential.")
-            mlp = True
+            print("Use PairFENet potential.")
+            pairfenet = True
+            ani = False
+        elif option_flag == 3:
+            print("Use ANI.")
+            pairfenet = False
+            ani = True
+
+        plat = str(input("""GPU or CPU?
+            > """))
 
         # setup simulation
-        simulation, output_dir, md_params, gro, force = openMM.setup(mlp)
+        simulation, output_dir, md_params, gro, force = openMM.setup(pairfenet,ani,plat)
 
         # run simulation
-        openMM.MD(simulation, mlp, output_dir, md_params, gro, force)
+        openMM.MD(simulation, pairfenet, output_dir, md_params, gro, force)
 
         print(datetime.now() - startTime)
 
@@ -266,13 +276,12 @@ def main():
             except ValueError:
                 print("Invalid Value")
 
-        perm_option = str(input("Shuffle permutations? (Y/N) > "))
-        if perm_option == "Y":
-            perm = True
-        else:
-            perm = False
-
         if option_flag == 1:
+            perm_option = str(input("Shuffle permutations? (Y/N) > "))
+            if perm_option == "Y":
+                perm = True
+            else:
+                perm = False
             input_dir = "qm_input"
             isExist = os.path.exists(input_dir)
             if not isExist:
@@ -537,6 +546,7 @@ def main():
             n_bins = int(input("Enter the number of bins > "))
             query_external.pop2D(sample_freq, n_bins, CV_list, molecule, source, output_dir)
 
+    # put all this into a module/functions
     elif input_flag == 8:
 
         element = {1: "H", 6: "C", 7: "N", 8: "O"}
@@ -569,8 +579,7 @@ def main():
         output_dir = "qm_input"
         isExist = os.path.exists(output_dir)
         if not isExist:
-            print("Error - no input files detected")
-            exit()
+            os.makedirs(output_dir)
 
         # open initial structure, find and extract coordinates
         qm_file = open(f"./mol_1.out", "r")
@@ -588,6 +597,7 @@ def main():
         # loop through all structures
         for i_angle in range(1, set_size):
             # determine rotation angle for this structure (radians)
+            # add option to do reverse scan
             angle = (i_angle * spacing) * np.pi / 180
             # generate rotation matrix for this structure
             mat_rot = generate_rotation_matrix(angle, axis)
@@ -598,7 +608,7 @@ def main():
                 # rotate old coordinates using rotation matrix
                 new_coord = np.matmul(mat_rot,old_coord)
                 # new_coord2 = mat_rot.dot(old_coord.T) # equivalent approach
-                # shift back to old origin
+                # shift to old origin
                 coord[i_angle][rot_list[i_atm]][:] = new_coord + coord[0][CV_list[2]][:]
 
         # write gaussian output

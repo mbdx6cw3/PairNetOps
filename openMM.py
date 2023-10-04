@@ -9,7 +9,7 @@ import output, plumed, read_inputs, os, shutil
 from openmmml import MLPotential
 from network import Network
 
-def setup(mlp):
+def setup(pairfenet, ani, plat):
 
     input_dir = "md_input"
     isExist = os.path.exists(input_dir)
@@ -32,15 +32,19 @@ def setup(mlp):
     thermostat = md_params["thermostat"]
     minim = md_params["minim"]
     coll_freq = md_params["coll_freq"]
-    platform = Platform.getPlatformByName("OpenCL")
+    platform = Platform.getPlatformByName(plat)
     gro = GromacsGroFile(f"{input_dir}/input.gro")
     top = GromacsTopFile(f"{input_dir}/input.top",
         periodicBoxVectors=gro.getPeriodicBoxVectors())
     n_atoms = len(gro.getPositions())
-    system = top.createSystem(nonbondedMethod=PME, nonbondedCutoff=1*nanometer)
+    if ani:
+        potential = MLPotential('ani2x')
+        system = potential.createSystem(top.topology)
+    else:
+        system = top.createSystem(nonbondedMethod=PME, nonbondedCutoff=1*nanometer)
 
     # for MLP define custom external force and set initial forces to zero
-    if mlp == True:
+    if pairfenet == True:
         force = CustomExternalForce("-fx*x-fy*y-fz*z")
         system.addForce(force)
         force.addPerParticleParameter("fx")
@@ -48,7 +52,7 @@ def setup(mlp):
         force.addPerParticleParameter("fz")
         for j in range(n_atoms):
             force.addParticle(j, (0, 0, 0))
-    elif mlp == False:
+    elif pairfenet == False:
         force = 0
 
     # define ensemble, thermostat and integrator
@@ -80,7 +84,7 @@ def setup(mlp):
 
     return simulation, output_dir, md_params, gro, force
 
-def MD(simulation, mlp, output_dir, md_params, gro, force):
+def MD(simulation, pairfenet, output_dir, md_params, gro, force):
 
     n_steps = md_params["n_steps"]
     print_trj = md_params["print_trj"]
@@ -89,7 +93,7 @@ def MD(simulation, mlp, output_dir, md_params, gro, force):
     n_atoms = len(gro.getPositions())
     vectors = gro.getUnitCellDimensions().value_in_unit(nanometer)
 
-    if mlp == True:
+    if pairfenet == True:
         input_dir = "trained_model"
         isExist = os.path.exists(input_dir)
         if not isExist:
@@ -123,7 +127,7 @@ def MD(simulation, mlp, output_dir, md_params, gro, force):
         coords = simulation.context.getState(getPositions=True). \
             getPositions(asNumpy=True).in_units_of(angstrom)
 
-        if mlp == True:
+        if pairfenet == True:
             prediction = model.predict([np.reshape(coords, (1, -1, 3)),
                                         np.reshape(atoms,(1, -1))])
             forces = prediction[0] * kilocalories_per_mole / angstrom
@@ -140,7 +144,7 @@ def MD(simulation, mlp, output_dir, md_params, gro, force):
                 getForces(asNumpy=True)
             state = simulation.context.getState(getEnergy=True)
 
-            if mlp == True:
+            if pairfenet == True:
                 PE = prediction[2][0][0]
             else:
                 PE = state.getPotentialEnergy() / kilojoule_per_mole
