@@ -64,7 +64,7 @@ def main():
             pairfenet = False
             ani = True
 
-        plat = str(input("""GPU or CPU?
+        plat = str(input("""OpenCL or CPU?
             > """))
 
         # setup simulation
@@ -597,7 +597,7 @@ def main():
         # loop through all structures
         for i_angle in range(1, set_size):
             # determine rotation angle for this structure (radians)
-            # add option to do reverse scan
+            # add option to do reverse scan (times by -1)
             angle = (i_angle * spacing) * np.pi / 180
             # generate rotation matrix for this structure
             mat_rot = generate_rotation_matrix(angle, axis)

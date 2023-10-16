@@ -8,6 +8,8 @@ import numpy as np
 import output, plumed, read_inputs, os, shutil
 from openmmml import MLPotential
 from network import Network
+import tensorflow as tf
+from tensorflow.keras import backend
 
 def setup(pairfenet, ani, plat):
 
@@ -128,6 +130,9 @@ def MD(simulation, pairfenet, output_dir, md_params, gro, force):
             getPositions(asNumpy=True).in_units_of(angstrom)
 
         if pairfenet == True:
+            # clear session every 1000 steps to avoid running out of memory
+            if (i % 1000) == 0:
+                tf.keras.backend.clear_session()
             prediction = model.predict([np.reshape(coords, (1, -1, 3)),
                                         np.reshape(atoms,(1, -1))])
             forces = prediction[0] * kilocalories_per_mole / angstrom
