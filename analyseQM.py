@@ -153,14 +153,14 @@ def get_pairs(mol, set_size, output_dir):
 
     # flatten output_matFE instead below?
     output.scatterplot([mol.mat_r.flatten()], [mol.output_eij.flatten()], "linear",
-        "$r_{ij}$ / $\AA$", "$e_{ij}$ / kcal/mol", "q_rij", output_dir)
+        "$r_{ij}$ / $\AA$", "$e_{ij}$ / kcal/mol", "eij_rij", output_dir)
     hist, bin = np.histogram(mol.output_eij.flatten(), 200,
         (np.min(mol.output_eij.flatten()), np.max(mol.output_eij.flatten())))
     bin = bin[range(1, bin.shape[0])]
     bin_width = bin[1] - bin[0]
     output.lineplot(bin, hist / bin_width / _NC2 / set_size, "linear",
-        "$e_{ij}$ / kcal/mol", "probability", "q_dist", output_dir)
-    np.savetxt(f"./{output_dir}/q_dist.dat",
+        "$e_{ij}$ / kcal/mol", "probability", "eij_dist", output_dir)
+    np.savetxt(f"./{output_dir}/eij_dist.dat",
                np.column_stack((bin, hist / bin_width / _NC2 / set_size)),
                delimiter=" ", fmt="%.6f")
     return None

@@ -2,10 +2,11 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
 
-plt.rcParams["font.size"] = 14
+plt.rcParams["font.size"] = 32
+plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams['mathtext.fontset'] = 'custom'
-plt.rcParams['mathtext.it'] = 'Arial:italic'
-plt.rcParams['mathtext.rm'] = 'Arial'
+plt.rcParams['mathtext.it'] = 'Times New Roman' #italic?
+plt.rcParams['mathtext.rm'] = 'Times New Roman'
 
 def lineplot(x, y, type, x_label, y_label, title, output_dir):
     fig, ax = plt.subplots()
@@ -105,10 +106,13 @@ def scurve(baseline, values, output_dir, output_file):
     return None
 
 
-def heatmap2D(x, y, z, z_max, output_dir, file, cmap):
+def heatmap2D(x, y, z, z_max, output_dir, file, cmap, fe_map):
     fig, ax = plt.subplots()
-    c = ax.pcolormesh(x, y, z, cmap=cmap)
-    # c = ax.pcolormesh(x, y, z, norm=colors.LogNorm(vmin=0.00001,vmax=z_max), cmap=cmap)
+    if fe_map:
+        c = ax.pcolormesh(x, y, z, cmap=cmap)
+    else:
+        c = ax.pcolormesh(x, y, z, norm=colors.LogNorm(vmin=0.00001,vmax=z_max),
+             cmap=cmap)
     ax.axis([x.min(), x.max(), y.min(), y.max()])
     x_label = "$\u03C6$ ($\u00b0$)"
     y_label = "$\u03C8$ ($\u00b0$)"
