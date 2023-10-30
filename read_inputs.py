@@ -21,14 +21,17 @@ class Molecule(object):
         if len(other.forces) > 0:
             self.forces = np.reshape(np.vstack(other.forces),
                                      (-1, len(self.atoms), 3))
+        if len(other.charges) > 0:
+            self.charges = np.reshape(np.vstack(other.charges),
+                                     (-1, len(self.atoms)))
         if hasattr(other, 'energies'):
             if len(other.energies) > 0:
                 self.energies = np.vstack(other.energies)
 
 class dataset():
-    def __init__(self, mol, input_dir, set_size, input, charges):
+    def __init__(self, mol, input_dir, set_size, input, charge):
         # TODO: remove this in version 2 (will always have charges)
-        if charges:
+        if charge:
             file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
             f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt",
             f"./{input_dir}/charges.txt"]
@@ -50,7 +53,7 @@ class dataset():
         if len(file_list) > 2:
             self.energies = []
             self.forces = []
-            self.charge =[]
+            self.charges =[]
             self.energies = np.loadtxt(file_list[3], max_rows=set_size)
             self.forces = np.reshape(np.loadtxt(file_list[2], max_rows=set_size
                 * self.n_atom), (set_size, self.n_atom, 3))

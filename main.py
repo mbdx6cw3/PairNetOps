@@ -223,13 +223,13 @@ def main():
 
         charge_option = str(input("Get partial charges? (Y/N) > "))
         if charge_option == "Y":
-            charges = True
+            charge = True
         else:
-            charges = False
+            charge = False
 
         # initiate molecule class and parse dataset
         mol = read_inputs.Molecule()
-        read_inputs.dataset(mol, input_dir, set_size, "qm", charges)
+        read_inputs.dataset(mol, input_dir, set_size, "qm", charge)
 
         option_flag = int(input("""
               [1] - Calculate force and energy probability distributions.
@@ -262,7 +262,11 @@ def main():
             rmsd_dist = analyseQM.rmsd_dist(mol,set_size)
             print(f"Distance matrix RMSD: {np.mean(rmsd_dist)} Angstrom")
         elif option_flag == 5:
-            print("analysing charges")
+            print("Analysing charges")
+            # print maximum, minimum and mean charge for each atom
+            #print(*mol.charges.max(axis=0))
+            #print(*mol.charges.min(axis=0))
+            #print(*mol.charges.mean(axis=0))
             exit()
 
     elif input_flag == 5:

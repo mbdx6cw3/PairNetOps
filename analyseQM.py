@@ -6,7 +6,6 @@ from scipy.stats import binned_statistic
 def dist(mol, set_size, output_dir):
     n_atom = len(mol.atoms)
     hist, bin = np.histogram(mol.forces.flatten(),200,(-250,250))
-    #np.max(mol.forces.flatten())))
     bin = bin[range(1, bin.shape[0])]
     bin_width = bin[1] - bin[0]
     output.lineplot(bin, hist / bin_width / set_size / 3.0 / n_atom, "linear",
