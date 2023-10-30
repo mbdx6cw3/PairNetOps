@@ -9,7 +9,7 @@ class Molecule(object):
     '''
 
     def get_ZCFE(self, other):
-        # For a given set of atom numbers, coords, forces and energies
+        # For a given set of atom numbers, coords, forces, energies and charges
         # read in, populate the Molecule object which is used to calculate
         # NRFs, decompFE, etc.
         self.atoms = other.atoms
@@ -26,8 +26,14 @@ class Molecule(object):
                 self.energies = np.vstack(other.energies)
 
 class dataset():
-    def __init__(self, mol, input_dir, set_size, input):
-        file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
+    def __init__(self, mol, input_dir, set_size, input, charges):
+        # TODO: remove this in version 2 (will always have charges)
+        if charges:
+            file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
+            f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt",
+            f"./{input_dir}/charges.txt"]
+        else:
+            file_list = ["./nuclear_charges.txt", f"./{input_dir}/coords.txt",
             f"./{input_dir}/forces.txt", f"./{input_dir}/energies.txt"]
         element = {1: "H", 6: "C", 7: "N", 8: "O"}
         self.atoms = []
@@ -44,9 +50,13 @@ class dataset():
         if len(file_list) > 2:
             self.energies = []
             self.forces = []
+            self.charge =[]
             self.energies = np.loadtxt(file_list[3], max_rows=set_size)
             self.forces = np.reshape(np.loadtxt(file_list[2], max_rows=set_size
                 * self.n_atom), (set_size, self.n_atom, 3))
+            self.charges = np.reshape(np.loadtxt(file_list[4], max_rows=set_size
+                * self.n_atom), (set_size, self.n_atom))
+            # convert OpenMM units
             if input == "md":
                 self.energies = self.energies / 4.184 # kJ/mol -> kcal/mol
                 self.forces = self.forces / 4.184 / 10.0 # kJ/mol/nm -> kcal/mol/A
