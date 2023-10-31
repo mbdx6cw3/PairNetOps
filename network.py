@@ -177,6 +177,8 @@ class Network(object):
         val_forces = np.take(mol.forces, mol.val, axis=0)
         train_output_eij = np.take(mol.output_eij, mol.train, axis=0)
         val_output_eij = np.take(mol.output_eij, mol.val, axis=0)
+        #trains_charges = np.take(mol.charges, mol.train, axis=0)
+        #val_charges = np.take(mol.charges, mol.val, axis=0)
 
         # create arrays of nuclear charges for different sets
         train_atoms = np.tile(atoms, (len(train_coords), 1))
@@ -200,7 +202,7 @@ class Network(object):
         optimizer = keras.optimizers.Adam(learning_rate=init_lr,
                 beta_1=0.9, beta_2=0.999, epsilon=1e-7, amsgrad=False)
 
-        # define loss function
+        # define loss function, TODO: add charges - replace eij weight
         model.compile(loss={'force': 'mse', 'eij': 'mse', 'energy': 'mse'},
             loss_weights={'force': loss_weights[0], 'eij': loss_weights[1],
             'energy': loss_weights[2]}, optimizer=optimizer)
@@ -275,6 +277,10 @@ class Network(object):
         np.savetxt(f"./{output_dir}/e_test.dat", np.column_stack((
             test_output_E.flatten(), test_prediction[2].flatten())),
             delimiter=", ", fmt="%.6f")
+
+        # charge test output
+
+
         return None
 
 
@@ -335,6 +341,8 @@ class Network(object):
         # obtain the forces by taking the gradient of the energy
         dE_dx = Force(n_atoms, n_pairs, name='dE_dx')\
             ([unscaleE_layer, coords_layer])
+
+        # another layer here for charges summation / removal of excess charge
 
         # define the input layers and output layers used in the loss function
         model = Model(

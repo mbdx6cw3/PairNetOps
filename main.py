@@ -6,7 +6,7 @@ __credits__ = ['CDW', 'Jas Kalayan', 'Ismaeel Ramzan',
 __license__ = 'GPL'
 __maintainer__ = 'Christopher D Williams'
 __email__ = 'christopher.williams@manchester.ac.uk'
-__status__ = 'Development'
+__status__ = 'old version'
 
 def main():
     import qm2ml, analyseQM, query_external, openMM, read_inputs, output,\
@@ -221,22 +221,15 @@ def main():
             print("Error - no input files detected")
             exit()
 
-        charge_option = str(input("Get partial charges? (Y/N) > "))
-        if charge_option == "Y":
-            charge = True
-        else:
-            charge = False
-
         # initiate molecule class and parse dataset
         mol = read_inputs.Molecule()
-        read_inputs.dataset(mol, input_dir, set_size, "qm", charge)
+        read_inputs.dataset(mol, input_dir, set_size, "qm")
 
         option_flag = int(input("""
               [1] - Calculate force and energy probability distributions.
               [2] - Calculate interatomic pairwise force components (q).
               [3] - Calculate energy wrt to geometric variable.
               [4] - Calculate distance matrix RMSD.
-              [5] - Analyse charges.
               > """))
 
         if option_flag == 1:
@@ -261,13 +254,6 @@ def main():
             print("Calculating distance matrix RMSD...")
             rmsd_dist = analyseQM.rmsd_dist(mol,set_size)
             print(f"Distance matrix RMSD: {np.mean(rmsd_dist)} Angstrom")
-        elif option_flag == 5:
-            print("Analysing charges")
-            # print maximum, minimum and mean charge for each atom
-            #print(*mol.charges.max(axis=0))
-            #print(*mol.charges.min(axis=0))
-            #print(*mol.charges.mean(axis=0))
-            exit()
 
     elif input_flag == 5:
 
@@ -296,11 +282,7 @@ def main():
                 perm = True
             else:
                 perm = False
-            charge_option = str(input("Get partial charges? (Y/N) > "))
-            if charge_option == "Y":
-                charges = True
-            else:
-                charges = False
+
             input_dir = "qm_input"
             isExist = os.path.exists(input_dir)
             if not isExist:
@@ -310,7 +292,7 @@ def main():
             isExist = os.path.exists(output_dir)
             if not isExist:
                 os.makedirs(output_dir)
-            qm2ml.gau2ml(set_size, step, input_dir, output_dir, perm, charges)
+            qm2ml.gau2ml(set_size, step, input_dir, output_dir, perm)
 
         elif option_flag == 2:
             input_dir = "qm_data"
