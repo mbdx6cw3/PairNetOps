@@ -278,9 +278,6 @@ class Network(object):
             test_output_E.flatten(), test_prediction[2].flatten())),
             delimiter=", ", fmt="%.6f")
 
-        # charge test output
-
-
         return None
 
 
@@ -341,8 +338,6 @@ class Network(object):
         # obtain the forces by taking the gradient of the energy
         dE_dx = Force(n_atoms, n_pairs, name='dE_dx')\
             ([unscaleE_layer, coords_layer])
-
-        # another layer here for charges summation / removal of excess charge
 
         # define the input layers and output layers used in the loss function
         model = Model(

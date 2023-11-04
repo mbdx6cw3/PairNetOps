@@ -76,7 +76,6 @@ def setup(pairfenet, ani, plat):
         system.addForce(PlumedForce(plumed_script))
 
     # set up simulation
-    print(platform)
     simulation = Simulation(top.topology, system, integrator, platform)
     simulation.context.setPositions(gro.positions)
 
@@ -148,7 +147,7 @@ def MD(simulation, pairfenet, output_dir, md_params, gro, force):
             velocities = simulation.context.getState(getVelocities=True).\
                 getVelocities(asNumpy=True)
             forces = simulation.context.getState(getForces=True).\
-                getForces(asNumpy=True)
+                getForces(asNumpy=True).in_units_of(kilocalories_per_mole / angstrom)
             state = simulation.context.getState(getEnergy=True)
 
             if pairfenet == True:
