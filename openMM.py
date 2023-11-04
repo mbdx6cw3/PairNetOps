@@ -124,6 +124,8 @@ def MD(simulation, pairfenet, output_dir, md_params, gro, force):
     f3 = open(f"./{output_dir}/velocities.txt", 'w')
     f4 = open(f"./{output_dir}/energies.txt", 'w')
 
+    tf.get_logger().setLevel('ERROR')
+
     # loop through total number of timesteps
     for i in range(n_steps):
         coords = simulation.context.getState(getPositions=True). \
@@ -134,7 +136,7 @@ def MD(simulation, pairfenet, output_dir, md_params, gro, force):
             if (i % 1000) == 0:
                 tf.keras.backend.clear_session()
             prediction = model.predict([np.reshape(coords, (1, -1, 3)),
-                                        np.reshape(atoms,(1, -1))])
+                                    np.reshape(atoms,(1, -1))], verbose=0)
             forces = prediction[0] * kilocalories_per_mole / angstrom
             forces = np.reshape(forces, (-1, 3))
             for j in range(n_atoms):

@@ -26,7 +26,7 @@ def main():
         input_flag = int(input(""" What would you like to do?
             [1] - Run MD simulation.
             [2] - Analyse MD output.
-            [3] - Convert MD output into QM input.
+            [3] - Convert MD output into QM or ML input.
             [4] - Analyse QM output.
             [5] - Convert QM output into ML or MD input.
             [6] - Train or Test an ANN.
@@ -169,6 +169,12 @@ def main():
             analyseMD.fes2D(input_dir1, output_dir)
 
     elif input_flag == 3:
+        
+        #print("Convert MD output into QM or ML input.")
+        #option_flag = int(input("""
+        #             [1] - Convert to QM input.
+        #             [2] - Convert to ML input.
+        #             > """))
         while True:
             try:
                 set_size = int(input("Enter the dataset size > "))
@@ -187,19 +193,23 @@ def main():
                 break
             except ValueError:
                 print("Invalid Value")
-        output_dir = "qm_input"
-        isExist = os.path.exists(output_dir)
-        if isExist:
-            shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
+
         input_dir = "md_output"
         isExist = os.path.exists(input_dir)
         if not isExist:
             print("Error - no input files detected")
             exit()
-
+        
         mol = read_inputs.Molecule()
         read_inputs.dataset(mol, input_dir, set_size, "md")
+        
+        #if option_flag == 1:
+        output_dir = "qm_input"
+        isExist = os.path.exists(output_dir)
+        if isExist:
+            shutil.rmtree(output_dir)
+        os.makedirs(output_dir)
+
         output.write_gau(mol, init, set_size, output_dir, opt_prop)
 
     elif input_flag == 4:
