@@ -10,6 +10,7 @@ from openmmml import MLPotential
 from network import Network
 import tensorflow as tf
 from tensorflow.keras import backend
+from datetime import datetime
 
 def setup(pairfenet, ani, plat):
 
@@ -78,7 +79,7 @@ def setup(pairfenet, ani, plat):
     # set up simulation
     simulation = Simulation(top.topology, system, integrator, platform)
     simulation.context.setPositions(gro.positions)
-
+    #CMMotionRemover(1)
     # minimise initial configuration
     if minim:
         simulation.minimizeEnergy()
@@ -127,6 +128,7 @@ def MD(simulation, pairfenet, output_dir, md_params, gro, force):
 
     # loop through total number of timesteps
     for i in range(n_steps):
+
         coords = simulation.context.getState(getPositions=True). \
             getPositions(asNumpy=True).in_units_of(angstrom)
 
@@ -134,8 +136,8 @@ def MD(simulation, pairfenet, output_dir, md_params, gro, force):
             # clear session every 1000 steps to avoid running out of memory
             if (i % 1000) == 0:
                 tf.keras.backend.clear_session()
-            prediction = model.predict([np.reshape(coords, (1, -1, 3)),
-                                    np.reshape(atoms,(1, -1))], verbose=0)
+            prediction = model.predict([np.reshape(coords[:n_atoms]/angstrom, (1, -1, 3)),
+                                    np.reshape(atoms,(1, -1))])
             forces = prediction[0] * kilocalories_per_mole / angstrom
             forces = np.reshape(forces, (-1, 3))
             for j in range(n_atoms):

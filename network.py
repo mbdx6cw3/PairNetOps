@@ -177,8 +177,6 @@ class Network(object):
         val_forces = np.take(mol.forces, mol.val, axis=0)
         train_output_eij = np.take(mol.output_eij, mol.train, axis=0)
         val_output_eij = np.take(mol.output_eij, mol.val, axis=0)
-        #trains_charges = np.take(mol.charges, mol.train, axis=0)
-        #val_charges = np.take(mol.charges, mol.val, axis=0)
 
         # create arrays of nuclear charges for different sets
         train_atoms = np.tile(atoms, (len(train_coords), 1))

@@ -170,11 +170,6 @@ def main():
 
     elif input_flag == 3:
         
-        #print("Convert MD output into QM or ML input.")
-        #option_flag = int(input("""
-        #             [1] - Convert to QM input.
-        #             [2] - Convert to ML input.
-        #             > """))
         while True:
             try:
                 set_size = int(input("Enter the dataset size > "))
