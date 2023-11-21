@@ -144,9 +144,8 @@ def check_stability(mol1, init, set_size, output_dir):
             for j in range(i):
                 r_ij = np.linalg.norm(mol1.coords[s][i] - mol1.coords[s][j])
                 if r_ij < min_dist:
-                    print("frame, bond number, atom i, atom j, bond dist (A), ref dist (A)")
-                    print(s, i_bond, atom_indices[i_bond][0],
-                          atom_indices[i_bond][1], r_ij, bond_dist[i_bond])
+                    print("frame, atom i, atom j, pair dist (A)")
+                    print(s, i, j, r_ij)
                     print("Writing .pdb file...")
                     output.write_pdb(mol1.coords[s][:][:], "name", 1, mol1.atoms,
                         atom_names, f"./{output_dir}/mol_{s + 1}.pdb", "w")
