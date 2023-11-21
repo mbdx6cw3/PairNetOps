@@ -89,12 +89,13 @@ def main():
             [3] - Calculate energy correlation.
             [4] - Calculate dihedral angle probability distributions.
             [5] - Calculate 2D free energy surface.
+            [6] - Assess stability. 
             > """))
 
         # initiate molecule class for MD dataset
         input_dir1 = "md_output"
         if option_flag == 1 or option_flag == 2 or option_flag == 3 or \
-            option_flag == 4:
+            option_flag == 4 or option_flag == 6:
             while True:
                 try:
                     set_size = int(input("Enter the dataset size > "))
@@ -167,6 +168,10 @@ def main():
         elif option_flag == 5:
             print("Calculating 2D free energy surface...")
             analyseMD.fes2D(input_dir1, output_dir)
+            
+        elif option_flag == 6:
+            print("Assessing stability...")
+            analyseMD.check_stability(mol1, init, set_size)
 
     elif input_flag == 3:
         

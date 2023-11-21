@@ -136,8 +136,8 @@ def MD(simulation, pairfenet, output_dir, md_params, gro, force):
             # clear session every 1000 steps to avoid running out of memory
             if (i % 1000) == 0:
                 tf.keras.backend.clear_session()
-            prediction = model.predict_on_batch([np.reshape(coords[:n_atoms]/angstrom, (1, -1, 3)),
-                                    np.reshape(atoms,(1, -1))])
+            prediction = model.predict_on_batch([np.reshape(coords[:n_atoms]
+                /angstrom, (1, -1, 3)), np.reshape(atoms,(1, -1))])
             forces = prediction[0] * kilocalories_per_mole / angstrom
             forces = np.reshape(forces, (-1, 3))
             for j in range(n_atoms):
