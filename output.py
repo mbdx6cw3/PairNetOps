@@ -73,6 +73,7 @@ def write_pdb(coords, resname, resid, atoms, atom_names, filename, open_type):
     '''
     outfile = open(filename, open_type)
     for i in range(len(atoms)):
+        #print(i, len(atoms), len(atom_names))
         outfile.write('\n'.join(['{:6s}{:5d} {:^4s}{:1s}{:3s}' \
                 ' {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}{:8.3f}' \
                 '{:6.0f}{:6.0f}          {:>2s}{:2s}'.format(
@@ -83,6 +84,7 @@ def write_pdb(coords, resname, resid, atoms, atom_names, filename, open_type):
     outfile.write('TER\n')
     outfile.close()
     return None
+
 
 def scurve(baseline, values, output_dir, output_file):
     """

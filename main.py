@@ -89,7 +89,7 @@ def main():
             [3] - Calculate energy correlation.
             [4] - Calculate dihedral angle probability distributions.
             [5] - Calculate 2D free energy surface.
-            [6] - Assess stability. 
+            [6] - Assess stability of simulation trajectory.
             > """))
 
         # initiate molecule class for MD dataset
@@ -170,8 +170,8 @@ def main():
             analyseMD.fes2D(input_dir1, output_dir)
             
         elif option_flag == 6:
-            print("Assessing stability...")
-            analyseMD.check_stability(mol1, init, set_size)
+            print("Assessing stability of simulation trajectory...")
+            analyseMD.check_stability(mol1, init, set_size, output_dir)
 
     elif input_flag == 3:
         
