@@ -203,7 +203,6 @@ def main():
         mol = read_inputs.Molecule()
         read_inputs.dataset(mol, input_dir, set_size, "md")
         
-        #if option_flag == 1:
         output_dir = "qm_input"
         isExist = os.path.exists(output_dir)
         if isExist:
