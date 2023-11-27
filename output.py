@@ -160,7 +160,7 @@ def write_gau(mol, init, set_size, output_dir, opt_prop):
                   f"{mol.coords[item,atom,2]:.8f}",
                   file=qm_file) # convert to Angstroms
         ### TODO: remove hard-coding!
-        if (item % opt_prop) == 0:
+        if (item % opt_prop) == 0 and item != 0:
             print(file=qm_file)
             print("5 4 2 3 B", file=qm_file)
             print("5 4 2 3 F", file=qm_file)
