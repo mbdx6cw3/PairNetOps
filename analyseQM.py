@@ -38,10 +38,8 @@ def energy_CV(mol, atom_indices, set_size, output_dir):
             x_label = "$\u03F4_{ijk}  (degrees)$"
             CV[item] = calc_geom.angle(p)
         elif len(CV_list) == 4:
-            if ((item) % 20) == 0:
-                x_label = "$\u03C6_{ijkl} (degrees)$"
-                CV[item] = calc_geom.dihedral(p)
-                print(item, CV[item], mol.energies[item])
+            x_label = "$\u03C6_{ijkl} (degrees)$"
+            CV[item] = calc_geom.dihedral(p)
     # plot distribution, scatter and save data
     print("MEAN:", np.mean(CV))
     energy = mol.energies[:,0] - np.min(mol.energies[:,0])
